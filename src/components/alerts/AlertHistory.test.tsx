@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import type { User } from '@supabase/supabase-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -94,13 +95,42 @@ describe('AlertHistory', () => {
     expect(screen.getByText(/PM2\.5 llegó a 42 µg\/m³.*> 35/)).toBeInTheDocument()
   })
 
-  it('marks all entries as seen on mount when there are unseen ones', async () => {
+  it('shows a "marcar como leídas" button only when there are unseen entries', () => {
     useAlertStore.setState({
       alerts: [mkAlert()],
-      history: [mkHistory()],
+      history: [mkHistory({ seen: true })],
+      unseenCount: 0,
+    })
+    const { rerender } = render(<AlertHistory stationsById={{ 1: mkStation(1, 'Parque') }} />)
+    expect(
+      screen.queryByRole('button', { name: /marcar todas como leídas/i }),
+    ).not.toBeInTheDocument()
+
+    useAlertStore.setState({ history: [mkHistory({ seen: false })], unseenCount: 1 })
+    rerender(<AlertHistory stationsById={{ 1: mkStation(1, 'Parque') }} />)
+    expect(screen.getByRole('button', { name: /marcar todas como leídas/i })).toBeInTheDocument()
+  })
+
+  it('clears unseen count when the button is clicked', async () => {
+    const user = userEvent.setup()
+    useAlertStore.setState({
+      alerts: [mkAlert()],
+      history: [mkHistory({ seen: false })],
       unseenCount: 1,
     })
     render(<AlertHistory stationsById={{ 1: mkStation(1, 'Parque') }} />)
+    await user.click(screen.getByRole('button', { name: /marcar todas como leídas/i }))
     await waitFor(() => expect(useAlertStore.getState().unseenCount).toBe(0))
+  })
+
+  it('shows an unread dot next to entries that are still unseen', () => {
+    useAlertStore.setState({
+      alerts: [mkAlert()],
+      history: [mkHistory({ id: 'unread', seen: false }), mkHistory({ id: 'read', seen: true })],
+      unseenCount: 1,
+    })
+    render(<AlertHistory stationsById={{ 1: mkStation(1, 'Parque') }} />)
+    expect(screen.getByLabelText('No leída')).toBeInTheDocument()
+    expect(screen.getAllByLabelText('No leída')).toHaveLength(1)
   })
 })

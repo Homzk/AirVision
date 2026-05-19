@@ -33,7 +33,7 @@ interface AlertState {
   loadAll: (userId: string) => Promise<void>
   createAlert: (userId: string, input: CreateAlertInput) => Promise<MutationResult>
   deleteAlert: (id: string) => Promise<MutationResult>
-  markAllSeen: (userId: string) => Promise<void>
+  markAllSeen: (userId: string) => Promise<MutationResult>
   applyTriggerInsert: (row: AlertHistoryRow) => void
   reset: () => void
 }
@@ -113,17 +113,20 @@ export const useAlertStore = create<AlertState>((set, get) => ({
   },
 
   markAllSeen: async (userId) => {
-    if (get().unseenCount === 0) return
+    if (get().unseenCount === 0) return { error: null }
     const { error } = await supabase
       .from('alert_history')
       .update({ seen: true })
       .eq('user_id', userId)
       .eq('seen', false)
-    if (error) return
+    if (error) {
+      return { error: `No se pudieron marcar como leídas: ${error.message}` }
+    }
     set((state) => ({
       history: state.history.map((h) => ({ ...h, seen: true })),
       unseenCount: 0,
     }))
+    return { error: null }
   },
 
   applyTriggerInsert: (row) => {
