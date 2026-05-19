@@ -2,6 +2,7 @@ import { Wind } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/stores/authStore'
 
 const NAV_LINKS = [
   { to: '/', label: 'Mapa' },
@@ -10,6 +11,10 @@ const NAV_LINKS = [
 ] as const
 
 export function Header() {
+  const status = useAuthStore((s) => s.status)
+  const user = useAuthStore((s) => s.user)
+  const signOut = useAuthStore((s) => s.signOut)
+
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
@@ -41,11 +46,41 @@ export function Header() {
             ))}
           </nav>
 
-          <div
-            className="flex items-center gap-2 text-sm"
-            data-slot="auth"
-            aria-label="Estado de sesión"
-          />
+          <div className="flex items-center gap-2 text-sm" aria-label="Estado de sesión">
+            {status === 'authenticated' && user && (
+              <>
+                <span
+                  className="hidden text-muted-foreground sm:inline-block"
+                  title={user.email ?? ''}
+                >
+                  {user.email}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  Cerrar sesión
+                </button>
+              </>
+            )}
+            {status === 'anonymous' && (
+              <>
+                <Link
+                  to="/login"
+                  className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
+                >
+                  Iniciar sesión
+                </Link>
+                <Link
+                  to="/registro"
+                  className="rounded-md bg-orange-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-orange-700"
+                >
+                  Registrarse
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

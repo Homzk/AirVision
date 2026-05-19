@@ -155,21 +155,21 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 
 ### Hook + Store
 
-- [ ] T057 [P] [US3] Implement `useAuth()` hook wrapping `supabase.auth.signUp`, `signInWithPassword`, `signOut`, `onAuthStateChange` in `src/hooks/useAuth.ts`
-- [ ] T058 [P] [US3] Write integration tests for `useAuth` mocking `supabase.auth.*` methods in `src/hooks/useAuth.test.ts`
-- [ ] T059 [P] [US3] Implement `authStore` (Zustand) holding `user`, `session`, `status: 'loading' | 'authenticated' | 'anonymous'` in `src/stores/authStore.ts`
-- [ ] T060 [P] [US3] Write unit tests for `authStore` state transitions in `src/stores/authStore.test.ts`
+- [x] T057 [P] [US3] `useAuth()` en `src/hooks/useAuth.ts` — bootstrap (getSession inicial + onAuthStateChange), retorna `{status, user, signUp, signIn, signOut}` derivado del store. Debe llamarse UNA vez en `App.tsx`.
+- [x] T058 [P] [US3] Tests de `useAuth` (5: bootstrap anónimo, bootstrap autenticado, transición SIGNED_IN tardío, unsubscribe en unmount, actions expuestas) en `src/hooks/useAuth.test.ts`.
+- [x] T059 [P] [US3] `authStore` (Zustand) con `status: 'loading'|'authenticated'|'anonymous'`, `user`, `session`, `setSession`, y actions `signUp/signIn/signOut` que envuelven `supabase.auth.*` y mapean errores a español vía `mapAuthError`. `signUp` distingue caso de confirmación de email pendiente.
+- [x] T060 [P] [US3] Tests de `authStore` (10: estado inicial, setSession null/válida, signIn ok/error mapeado, signUp con/sin confirmación + error, signOut delega, mapAuthError cubre patrones conocidos + fallback) en `src/stores/authStore.test.ts`.
 
 ### Components
 
-- [ ] T061 [P] [US3] Implement `LoginForm` (email + password fields, validation, Spanish error mapping "Email o contraseña incorrectos") in `src/components/auth/LoginForm.tsx`
-- [ ] T062 [P] [US3] Write integration test for `LoginForm` (fill fields, submit, assert hook call) in `src/components/auth/LoginForm.test.tsx`
-- [ ] T063 [P] [US3] Implement `RegisterForm` (email + password ≥8 chars + confirmación; mapeo de errores) in `src/components/auth/RegisterForm.tsx`
-- [ ] T064 [P] [US3] Write integration test for `RegisterForm` in `src/components/auth/RegisterForm.test.tsx`
-- [ ] T065 [P] [US3] Implement `AuthGate` component (renders children only when authenticated; otherwise redirects to `/login`) in `src/components/auth/AuthGate.tsx`
-- [ ] T066 [US3] Implement `LoginPage` and `RegisterPage` shells in `src/pages/LoginPage.tsx` and `src/pages/RegisterPage.tsx`
-- [ ] T067 [US3] Wire `Header` to show "Iniciar sesión / Registrarse" links when anonymous and email + "Cerrar sesión" when authenticated in `src/components/layout/Header.tsx`
-- [ ] T068 [US3] Mount `LoginPage` and `RegisterPage` routes; bootstrap `useAuth` once in `App.tsx` so `authStore` is hydrated on app load in `src/App.tsx`
+- [x] T061 [P] [US3] `LoginForm` con email + password (autoComplete, minLength 8), estado local `isSubmitting`/`error`, navegación a `/` en éxito. Error en `<p role="alert">`. En `src/components/auth/LoginForm.tsx`.
+- [x] T062 [P] [US3] Tests de `LoginForm` (3: render, submit success → navigate, error mapeado en alert) en `src/components/auth/LoginForm.test.tsx`.
+- [x] T063 [P] [US3] `RegisterForm` con email + password + confirmación; valida `length ≥ 8` y `password === confirmPassword` antes de llamar a `signUp`; ramifica entre `needsConfirmation` (info toast + redirect `/login`) y sesión inmediata (success toast + redirect `/`). En `src/components/auth/RegisterForm.tsx`.
+- [x] T064 [P] [US3] Tests de `RegisterForm` (6: render, password corto, passwords no coinciden, signup con sesión → navigate + toast success, signup sin sesión → navigate /login + toast info, error backend mapeado) en `src/components/auth/RegisterForm.test.tsx`.
+- [x] T065 [P] [US3] `AuthGate` renderiza `LoadingState` mientras `status === 'loading'`, `<Navigate to="/login" replace>` si `anonymous`, children si `authenticated`. En `src/components/auth/AuthGate.tsx`. (Aún no montado en rutas; eso se hace en T078/T101.)
+- [x] T066 [US3] `LoginPage` y `RegisterPage` con form embebido + link cruzado a la otra pantalla en `src/pages/LoginPage.tsx` y `src/pages/RegisterPage.tsx`.
+- [x] T067 [US3] `Header` ahora lee `status`/`user`/`signOut` del store; muestra email + "Cerrar sesión" si autenticado, "Iniciar sesión" (oculto < sm) + botón naranjo "Registrarse" si anónimo, nada si `loading`. En `src/components/layout/Header.tsx`.
+- [x] T068 [US3] `App.tsx` llama `useAuth()` al tope. Rutas `/login` y `/registro` ya cableadas desde Phase 2 T025.
 
 **Checkpoint**: Auth flow complete. Sections `/favoritos` and `/alertas` are now gateable (still empty placeholders).
 
