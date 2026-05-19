@@ -8,6 +8,7 @@ dist
 dist-ssr
 build
 *.local
+.vite
 
 # Composite tsconfig emit (vite.config.ts / vitest.config.ts via tsc -b)
 vite.config.js

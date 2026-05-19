@@ -45,11 +45,12 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 
 ### Database (public schema)
 
-- [ ] T011 Create migration `supabase/migrations/0001_stations.sql` with `stations` table, CHECK constraints on lat/lon, `stations_country_idx`, and RLS policy `stations_select_public`
-- [ ] T012 Create migration `supabase/migrations/0002_readings.sql` with `readings` table (wide format, nullable `pm25`/`pm10`/`o3`), `UNIQUE (station_id, measured_at)`, non-negative CHECK constraints, indexes `readings_station_time_idx` and `readings_measured_at_idx`, and RLS policy `readings_select_public`
-- [ ] T013 Create migration `supabase/migrations/0010_latest_reading_view.sql` defining the `latest_station_readings` view (DISTINCT ON per station)
-- [ ] T014 Create migration `supabase/migrations/0011_realtime_publication.sql` running `ALTER PUBLICATION supabase_realtime ADD TABLE readings`
-- [ ] T015 Apply all migrations locally with `supabase db reset` and run `supabase gen types typescript --local > src/types/database.ts` (commit the generated file)
+- [x] T011 Create migration `supabase/migrations/0001_stations.sql` with `stations` table, CHECK constraints on lat/lon, `stations_country_idx`, and RLS policy `stations_select_public`
+- [x] T012 Create migration `supabase/migrations/0002_readings.sql` with `readings` table (wide format, nullable `pm25`/`pm10`/`o3`), `UNIQUE (station_id, measured_at)`, non-negative CHECK constraints, indexes `readings_station_time_idx` and `readings_measured_at_idx`, and RLS policy `readings_select_public`
+- [x] T013 Create migration `supabase/migrations/0010_latest_reading_view.sql` defining the `latest_station_readings` view (DISTINCT ON per station; `security_invoker=on` para respetar RLS de `readings`)
+- [x] T014 Create migration `supabase/migrations/0011_realtime_publication.sql` running `ALTER PUBLICATION supabase_realtime ADD TABLE readings` (guardado con `DO $$` idempotente)
+- [x] T014b Create `supabase/seed.sql` con 5 estaciones de Chile + 24 h de lecturas horarias sintéticas (idempotente; no se aplica con `db push`, hay que correrlo manual)
+- [x] T015 **Adaptado a Cloud (sin Docker)**: 4 migraciones aplicadas con `supabase db push`; seed corrido desde Studio (5 stations + 120 readings); `src/types/database.ts` generado con `supabase gen types typescript --linked` y reencodeado a UTF-8 sin BOM (PowerShell 5.1 escribe UTF-16 por defecto con `>`). Para futuros refresh de tipos, canalizar por `| Out-File -Encoding utf8` o equivalente
 
 ### Frontend foundation
 
