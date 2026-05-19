@@ -1,6 +1,7 @@
 import { LogIn, LogOut, Wind } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 
+import { AlertBadge } from '@/components/alerts/AlertBadge'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -51,6 +52,7 @@ export function Header() {
           <div className="flex items-center gap-2 text-sm" aria-label="Estado de sesión">
             {status === 'authenticated' && user && (
               <>
+                <AlertBadge />
                 {user.email && (
                   <span className="hidden text-muted-foreground sm:inline-block" title={user.email}>
                     {user.email}

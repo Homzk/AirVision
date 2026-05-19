@@ -39,6 +39,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_history: {
+        Row: {
+          alert_id: string
+          id: string
+          reading_id: number
+          seen: boolean
+          triggered_at: string
+          triggered_value: number
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          id?: string
+          reading_id: number
+          seen?: boolean
+          triggered_at?: string
+          triggered_value: number
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          id?: string
+          reading_id?: number
+          seen?: boolean
+          triggered_at?: string
+          triggered_value?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_history_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_history_reading_id_fkey"
+            columns: ["reading_id"]
+            isOneToOne: false
+            referencedRelation: "readings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alerts: {
+        Row: {
+          created_at: string
+          direction: Database["public"]["Enums"]["alert_direction"]
+          id: string
+          is_armed: boolean
+          pollutant: Database["public"]["Enums"]["pollutant"]
+          station_id: number
+          threshold: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          direction: Database["public"]["Enums"]["alert_direction"]
+          id?: string
+          is_armed?: boolean
+          pollutant: Database["public"]["Enums"]["pollutant"]
+          station_id: number
+          threshold: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          direction?: Database["public"]["Enums"]["alert_direction"]
+          id?: string
+          is_armed?: boolean
+          pollutant?: Database["public"]["Enums"]["pollutant"]
+          station_id?: number
+          threshold?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       readings: {
         Row: {
           id: number
@@ -158,7 +244,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      alert_direction: "greater_than" | "less_than"
+      pollutant: "pm25" | "pm10" | "o3"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -288,6 +375,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      alert_direction: ["greater_than", "less_than"],
+      pollutant: ["pm25", "pm10", "o3"],
+    },
   },
 } as const

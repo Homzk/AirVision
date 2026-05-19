@@ -216,40 +216,40 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 
 ### Database
 
-- [ ] T081 [US5] Create migration `supabase/migrations/0004_alerts.sql` with `pollutant` and `alert_direction` ENUMs, `alerts` table, `is_armed` column, indexes, RLS policies, and `enforce_alerts_limit` trigger (BEFORE INSERT, max 5)
-- [ ] T082 [US5] Create migration `supabase/migrations/0005_alert_history.sql` with `alert_history` table (including `seen` column and partial index `alert_history_unseen_idx`), RLS policies (select/update own), and add table to realtime publication
-- [ ] T083 [US5] Create migration `supabase/migrations/0007_alert_trigger.sql` with the `evaluate_alerts()` PL/pgSQL function (SECURITY DEFINER, edge-triggered state machine on `is_armed`) and the `readings_evaluate_alerts_trigger` AFTER INSERT trigger
-- [ ] T084 [US5] Create migration `supabase/migrations/0009_history_rotation_trigger.sql` with `rotate_alert_history()` function and AFTER INSERT trigger that keeps only 20 entries per user
-- [ ] T085 [US5] Apply migrations and regenerate types: `supabase db reset && supabase gen types typescript --local > src/types/database.ts`
-- [ ] T086 [US5] Manual DB-level verification: insert a sequence of readings via `psql` simulating arm/disarm cycles; confirm `alerts.is_armed` transitions and `alert_history` rows match expectations (documented test plan in `specs/001-air-quality-dashboard/quickstart.md`)
+- [x] T081 [US5] `supabase/migrations/0004_alerts.sql`: ENUMs `pollutant` y `alert_direction`, tabla `alerts` con `is_armed` (default true) + CHECK threshold≥0, índices `alerts_user_idx` y `alerts_station_idx`, RLS con select/insert/update/delete own, trigger `enforce_alerts_limit` (BEFORE INSERT, tope 5).
+- [x] T082 [US5] `supabase/migrations/0005_alert_history.sql`: tabla `alert_history` con `seen` (default false), índices incluido `alert_history_unseen_idx WHERE seen=false`, RLS (select/update own; no INSERT/DELETE al cliente), agrega tabla a `supabase_realtime` con guardia `DO $$` idempotente.
+- [x] T083 [US5] `supabase/migrations/0007_alert_trigger.sql`: función `evaluate_alerts()` `SECURITY DEFINER` con `search_path = public`. Itera sobre alertas de la estación del nuevo reading, evalúa edge-triggered: si `cond_met AND is_armed` registra disparo y desarma; si `NOT cond_met AND NOT is_armed` re-arma. Trigger `readings_evaluate_alerts_trigger` AFTER INSERT.
+- [x] T084 [US5] `supabase/migrations/0009_history_rotation_trigger.sql`: `rotate_alert_history()` `SECURITY DEFINER` borra entradas más allá de la posición 20 (`ORDER BY triggered_at DESC OFFSET 20`). Trigger AFTER INSERT en `alert_history`.
+- [x] T085 [US5] Aplicado con `supabase db push` y tipos regenerados (`alerts`, `alert_history`, ENUMs visibles en `src/types/database.ts`).
+- [x] T086 [US5] Verificación manual del trigger documentada en el commit de US5: secuencia (alert PM2.5>30 → reading 42 dispara → reading 55 NO dispara → reading 10 re-arma → reading 50 vuelve a disparar) confirma máquina de estado.
 
 ### Hooks
 
-- [ ] T087 [P] [US5] Implement `useAlerts()` hook (list, create, delete; map limit-reached error to "Máximo 5 alertas. Elimina una existente para crear otra.") in `src/hooks/useAlerts.ts`
-- [ ] T088 [P] [US5] Write integration tests for `useAlerts` (CRUD + limit error path) in `src/hooks/useAlerts.test.ts`
-- [ ] T089 [P] [US5] Implement `useAlertHistory()` hook (initial fetch, mark-seen mutation, realtime subscription to own rows) in `src/hooks/useAlertHistory.ts`
-- [ ] T090 [P] [US5] Write integration tests for `useAlertHistory` covering fetch, mark-seen, and realtime INSERT handling in `src/hooks/useAlertHistory.test.ts`
+- [x] T087 [P] [US5] `useAlerts()` en `src/hooks/useAlerts.ts` — load on auth + reset on signout, expone `alerts`, `canCreateMore`, `createAlert`, `deleteAlert`. Mapea error trigger a "Máximo 5 alertas. Elimina una existente para crear otra."
+- [x] T088 [P] [US5] Tests de `useAlerts` (7: anónimo, load autenticado, create success, create tope local, create error backend, delete, reset on logout) en `src/hooks/useAlerts.test.ts`.
+- [x] T089 [P] [US5] `useAlertHistory()` en `src/hooks/useAlertHistory.ts` — bootstrap session-wide. Carga inicial + suscripción Realtime al canal `alert_history:user:${userId}` filtrado por `user_id=eq.${userId}`. Cada INSERT dispara `applyTriggerInsert` en el store + `toast.info` contextual con nombre de estación (resuelto vía `dashboardStore`). Llamarlo UNA vez en `App`.
+- [x] T090 [P] [US5] Tests de `useAlertHistory` (5: anónimo idle, sub + load en auth, toast contextual con station match, toast genérico cuando alert desconocida, cleanup en unmount) en `src/hooks/useAlertHistory.test.ts`.
 
 ### Store
 
-- [ ] T091 [P] [US5] Implement `alertStore` (Zustand) with `unseenCount`, `history[]`, `incrementUnseen(row)`, `markAllSeen()` in `src/stores/alertStore.ts`
-- [ ] T092 [P] [US5] Write unit tests for `alertStore` state transitions in `src/stores/alertStore.test.ts`
+- [x] T091 [P] [US5] `alertStore` en `src/stores/alertStore.ts` — extendido más allá del plan original. Contiene `alerts`, `history`, `unseenCount`, `loadedForUserId` y actions `loadAll`/`createAlert`/`deleteAlert`/`markAllSeen`/`applyTriggerInsert`/`reset`. `loadAll` hace dos queries en paralelo (alerts + history). Constantes `MAX_ALERTS=5` y `MAX_HISTORY=20`. Función `mapCreateAlertError` mapea errores del trigger a español.
+- [x] T092 [P] [US5] Tests de `alertStore` (6: estado inicial, applyTriggerInsert incrementa unseen, applyTriggerInsert con seen=true no incrementa, rotación a 20, reset, mapCreateAlertError) en `src/stores/alertStore.test.ts`. Cobertura adicional vía useAlerts + useAlertHistory tests.
 
 ### Components
 
-- [ ] T093 [P] [US5] Implement `AlertForm` (station picker filtered to user's favorites + free search, pollutant select, threshold input, direction toggle, submit) in `src/components/alerts/AlertForm.tsx`
-- [ ] T094 [P] [US5] Write integration test for `AlertForm` covering valid submit and limit-reached error in `src/components/alerts/AlertForm.test.tsx`
-- [ ] T095 [P] [US5] Implement `AlertList` (active alerts with delete button, empty state with "Crea tu primera alerta") in `src/components/alerts/AlertList.tsx`
-- [ ] T096 [P] [US5] Write component test for `AlertList` covering render, delete, empty branches in `src/components/alerts/AlertList.test.tsx`
-- [ ] T097 [P] [US5] Implement `AlertHistory` (20 most recent triggers, descending; marks all as seen on mount via `useAlertHistory.markAllSeen()`) in `src/components/alerts/AlertHistory.tsx`
-- [ ] T098 [P] [US5] Write component test for `AlertHistory` covering render, mark-seen on mount, empty branch in `src/components/alerts/AlertHistory.test.tsx`
-- [ ] T099 [P] [US5] Implement `AlertBadge` (red circle with `unseenCount` in `Header`; hidden when 0) in `src/components/alerts/AlertBadge.tsx`
-- [ ] T100 [P] [US5] Write component test for `AlertBadge` covering visible/hidden states in `src/components/alerts/AlertBadge.test.tsx`
-- [ ] T101 [US5] Implement `AlertsPage` (tabs "Mis alertas" / "Historial" + "Nueva alerta" button opening `AlertForm` in a dialog) wrapped in `AuthGate` in `src/pages/AlertsPage.tsx`
-- [ ] T102 [US5] Wire `Header` to render `AlertBadge` linked to `/alertas` (only when authenticated) in `src/components/layout/Header.tsx`
-- [ ] T103 [US5] Bootstrap session-start summary toast: in `App.tsx`, after `authStore` becomes authenticated, query unseen count once and if > 0 emit a single `toast.info("Tienes N alertas nuevas")` in `src/App.tsx`
-- [ ] T104 [US5] Wire realtime INSERT on `alert_history` (via `useAlertHistory`) to emit per-trigger `toast.info(...)` while app is open in `src/hooks/useAlertHistory.ts`
-- [ ] T105 [US5] Mount `/alertas` route to `AlertsPage` in `src/App.tsx`
+- [x] T093 [P] [US5] `AlertForm` con select de estación (optgroups Favoritas/Todas), select pollutant, select condición (greater_than/less_than), input numérico threshold con sugerencia inicial 35, validación local antes de llamar a `createAlert`, toast.success + onClose en éxito. En `src/components/alerts/AlertForm.tsx`. Nota: el "free search" del plan se difirió — con 12 estaciones el `<select>` con grupos es suficiente y mucho menos código.
+- [x] T094 [P] [US5] Tests de `AlertForm` (4: render fields, refusa sin estación, submit success, error backend Spanish) en `src/components/alerts/AlertForm.test.tsx`.
+- [x] T095 [P] [US5] `AlertList` con cards `flex` (info + Trash button), badge "Armada"/"Esperando re-arme", empty state con icono `Bell`. En `src/components/alerts/AlertList.tsx`.
+- [x] T096 [P] [US5] Tests de `AlertList` (3: empty, render con armada/desarmada, delete success) en `src/components/alerts/AlertList.test.tsx`.
+- [x] T097 [P] [US5] `AlertHistory` con cards por disparo, `useEffect` que llama a `markAllSeen` al montar, empty state. En `src/components/alerts/AlertHistory.tsx`. Resuelve nombre de estación y descripción del alerta cruzando con `alertStore.alerts`.
+- [x] T098 [P] [US5] Tests de `AlertHistory` (3: empty, render con detalles, markAllSeen al montar) en `src/components/alerts/AlertHistory.test.tsx`.
+- [x] T099 [P] [US5] `AlertBadge` con Link a `/alertas`, icono `Bell` 32×32, círculo `bg-orange-600` con count. Oculto si anónimo o `unseenCount === 0`. `aria-label` cambia entre singular/plural. En `src/components/alerts/AlertBadge.tsx`.
+- [x] T100 [P] [US5] Tests de `AlertBadge` (4: anónimo, autenticado con 0, autenticado con count, singular en 1) en `src/components/alerts/AlertBadge.test.tsx`.
+- [x] T101 [US5] `AlertsPage` envuelta en `AuthGate`. Subcomponente `AlertsContent` con tabs "Mis alertas"/"Historial" (`role="tablist"`), botón "Nueva alerta" (disabled cuando `!canCreateMore` con tooltip), `AlertFormDialog` interno como modal centrado con backdrop click-to-close. En `src/pages/AlertsPage.tsx`.
+- [x] T102 [US5] `<AlertBadge />` integrado en `Header` antes del email/Cerrar sesión. Solo aparece cuando autenticado + unseenCount > 0.
+- [x] T103 [US5] `useAlertSummaryToast` (hook privado en `App.tsx`) emite UN solo `toast.info("Tienes N ...")` por user-id; observa `loadedForUserId` para esperar a que el load termine antes de notificar.
+- [x] T104 [US5] El toast per-disparo vive dentro del callback de Realtime en `useAlertHistory`: usa `dashboardStore` para nombre de estación, `POLLUTANT_LABELS`/`POLLUTANT_UNITS` para el contaminante, y formatea valor con `toFixed(0)`.
+- [x] T105 [US5] Ruta `/alertas` ya montada en `App.tsx` desde Phase 2 T025. `AlertsPage` ahora renderiza contenido real.
 
 **Checkpoint**: Todas las historias completas. App es feature-complete contra el spec.
 
