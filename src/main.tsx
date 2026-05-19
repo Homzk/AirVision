@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 
 import App from './App'
 import './index.css'
+import 'leaflet/dist/leaflet.css'
 
 const rootEl = document.getElementById('root')
 if (!rootEl) {

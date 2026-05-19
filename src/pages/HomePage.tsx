@@ -1,10 +1,31 @@
+import { MapView } from '@/components/map/MapView'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorState } from '@/components/ui/ErrorState'
+import { LoadingState } from '@/components/ui/LoadingState'
+import { useStations } from '@/hooks/useStations'
+
 export default function HomePage() {
-  return (
-    <section className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Mapa de calidad del aire</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        El mapa interactivo se implementará en US1.
-      </p>
-    </section>
-  )
+  const { stations, isLoading, error, refresh } = useStations()
+
+  if (isLoading) return <LoadingState message="Cargando estaciones…" />
+
+  if (error) {
+    return (
+      <ErrorState
+        message={`No se pudieron cargar las estaciones: ${error.message}`}
+        onRetry={() => void refresh()}
+      />
+    )
+  }
+
+  if (stations.length === 0) {
+    return (
+      <EmptyState
+        title="Aún no se han recibido mediciones"
+        description="Cuando lleguen datos del sistema de monitoreo, las estaciones aparecerán en el mapa."
+      />
+    )
+  }
+
+  return <MapView stations={stations} />
 }

@@ -68,13 +68,17 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 - [x] T026 `main.tsx` con `<BrowserRouter>` + `<Toaster richColors />` de `sonner`.
 - [x] T027 [P] `LoadingState`, `ErrorState` (con `onRetry` opcional), `EmptyState` en `src/components/ui/`. Iconos lucide, mensajes en español, ARIA `role`/`aria-live`.
 
-### Ingestion pipeline (Supabase backend)
+### Ingestion pipeline (Supabase backend) — **diferida a post-MVP**
 
-- [ ] T028 [P] Implement OpenAQ shared client with pagination, retries, validation in `supabase/functions/_shared/openaq.ts`
-- [ ] T029 [P] Write Deno unit tests for `openaq.ts` covering invalid-reading filter and pagination loop in `supabase/functions/_shared/openaq.test.ts`
-- [ ] T030 Implement Edge Function `seed-stations` (fetches OpenAQ locations, upserts to `stations`) in `supabase/functions/seed-stations/index.ts`
-- [ ] T031 Implement Edge Function `ingest-openaq` (fetches measurements for last 30 min for pm25/pm10/o3 across Chile bbox, upserts with `ON CONFLICT DO UPDATE COALESCE`) in `supabase/functions/ingest-openaq/index.ts`
-- [ ] T032 Deploy both functions to local Supabase and run them once to seed `stations` and populate initial `readings` (manual verification step documented in `quickstart.md`)
+> El seed sintético de `supabase/seed.sql` (5 estaciones + 24 h horarias) cubre
+> US1+US2 sin OpenAQ. La ingesta real se conecta sin tocar el frontend cuando
+> esté disponible la `OPENAQ_API_KEY` y un slot de despliegue de Edge Functions.
+
+- [ ] T028 [P] [deferred] Implement OpenAQ shared client with pagination, retries, validation in `supabase/functions/_shared/openaq.ts`
+- [ ] T029 [P] [deferred] Write Deno unit tests for `openaq.ts` covering invalid-reading filter and pagination loop in `supabase/functions/_shared/openaq.test.ts`
+- [ ] T030 [deferred] Implement Edge Function `seed-stations` (fetches OpenAQ locations, upserts to `stations`) in `supabase/functions/seed-stations/index.ts`
+- [ ] T031 [deferred] Implement Edge Function `ingest-openaq` (fetches measurements for last 30 min for pm25/pm10/o3 across Chile bbox, upserts with `ON CONFLICT DO UPDATE COALESCE`) in `supabase/functions/ingest-openaq/index.ts`
+- [ ] T032 [deferred] Deploy both functions and schedule cron `*/15 * * * *` en Supabase Cloud (alternativa a `supabase functions deploy` local)
 
 **Checkpoint**: Public DB schema live, types generated, app shell renders, OpenAQ data flowing. Ready to build user-facing stories.
 
@@ -88,26 +92,27 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 
 ### Hooks
 
-- [ ] T033 [P] [US1] Implement `useStations()` hook that queries `latest_station_readings` joined with `stations` in `src/hooks/useStations.ts`
-- [ ] T034 [P] [US1] Write integration tests for `useStations` mocking `supabase.from(...)` chain in `src/hooks/useStations.test.ts`
-- [ ] T035 [P] [US1] Implement `useReadingsRealtime()` hook that subscribes to `readings` INSERT and dispatches into a callback in `src/hooks/useReadingsRealtime.ts`
-- [ ] T036 [P] [US1] Write integration tests for `useReadingsRealtime` mocking the `supabase.channel(...)` chain in `src/hooks/useReadingsRealtime.test.ts`
+- [x] T033 [P] [US1] `useStations()` en `src/hooks/useStations.ts` — dos queries paralelas (`stations` + `latest_station_readings`) y merge cliente; evita depender de embedded join sobre vistas y conserva stations sin lecturas (`latest: null`).
+- [x] T034 [P] [US1] Tests de `useStations` (6: empty, merge, null measured_at, error en stations, error en latest, refresh) en `src/hooks/useStations.test.ts`.
+- [x] T035 [P] [US1] `useReadingsRealtime()` en `src/hooks/useReadingsRealtime.ts` — canal `readings:inserts`, callback vía ref para no re-suscribir, expone `status: 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED'`.
+- [x] T036 [P] [US1] Tests de `useReadingsRealtime` (7: subscribe, cleanup, callback, callback identity, status transitions, error states, fallback) en `src/hooks/useReadingsRealtime.test.ts`.
 
 ### Store
 
-- [ ] T037 [P] [US1] Implement `dashboardStore` (Zustand) with `selectedStationId`, `stationsById` snapshot, `applyNewReading` action in `src/stores/dashboardStore.ts`
-- [ ] T038 [P] [US1] Write unit tests for `dashboardStore` covering state transitions in `src/stores/dashboardStore.test.ts`
+- [x] T037 [P] [US1] `dashboardStore` (Zustand) con `selectedStationId`, `stationsById`, `setStations`, `applyNewReading` (descarta lecturas más antiguas, no-op para stations desconocidas), `setSelectedStationId` en `src/stores/dashboardStore.ts`.
+- [x] T038 [P] [US1] Tests de `dashboardStore` (8: estado inicial, indexar por id, replace, newer, older, unknown station, primer reading desde null, set/clear selection) en `src/stores/dashboardStore.test.ts`.
+- [x] T038b [US1] Tipos compartidos `Station`, `Reading`, `LatestReading`, `StationWithLatest` en `src/types/domain.ts`.
 
 ### Components
 
-- [ ] T039 [P] [US1] Implement `StationMarker` component (Leaflet `<CircleMarker>` with color from `levelToColor`) in `src/components/map/StationMarker.tsx`
-- [ ] T040 [P] [US1] Write component test for `StationMarker` rendering correct color per level in `src/components/map/StationMarker.test.tsx`
-- [ ] T041 [P] [US1] Implement `StationPopup` component showing station name, three pollutants with units, level badge, last-reading timestamp, and "Sin datos recientes" branch in `src/components/map/StationPopup.tsx`
-- [ ] T042 [P] [US1] Write component test for `StationPopup` covering normal, partial-pollutants, and no-data states in `src/components/map/StationPopup.test.tsx`
-- [ ] T043 [P] [US1] Implement `MapLegend` (overlay describing the 5 colors) in `src/components/map/MapLegend.tsx`
-- [ ] T044 [US1] Implement `MapView` (assembles `<MapContainer>`, `<TileLayer>`, markers, legend; centers on Chile; subscribes to `useStations` + `useReadingsRealtime`) in `src/components/map/MapView.tsx`
-- [ ] T045 [US1] Implement `HomePage` (renders `MapView`, handles loading/error/empty states, banner "Aún no se han recibido mediciones" when DB empty) in `src/pages/HomePage.tsx`
-- [ ] T046 [US1] Mount `HomePage` at the `/` route in `src/App.tsx` (replace placeholder)
+- [x] T039 [P] [US1] `StationMarker` (`<CircleMarker>` blanco con borde y color de fondo según `computeWorstLevel`) en `src/components/map/StationMarker.tsx`.
+- [x] T040 [P] [US1] Tests de `StationMarker` (4: posición, no_data, worst-of, click) con `react-leaflet` mockeado en `src/components/map/StationMarker.test.tsx`.
+- [x] T041 [P] [US1] `StationPopup` con nombre, ciudad, 3 contaminantes (`PollutantCell` subcomp), badge de nivel, timestamp formateado, branch "Sin datos recientes", botón "Ver tendencias" opcional en `src/components/map/StationPopup.tsx`.
+- [x] T042 [P] [US1] Tests de `StationPopup` (5: render normal, em-dash por valor null, sin datos, botón con onOpenTrends, botón oculto sin handler) en `src/components/map/StationPopup.test.tsx`.
+- [x] T043 [P] [US1] `MapLegend` con 5 colores + labels en español, overlay absoluto con z-index 1000 en `src/components/map/MapLegend.tsx`.
+- [x] T044 [US1] `MapView` ensambla `<MapContainer>` + tiles OSM + markers desde `dashboardStore.stationsById` + `<MapLegend>`; alimenta el store con las stations recibidas y suscribe `useReadingsRealtime → applyNewReading` para refrescar marcadores en vivo. CSS de Leaflet importado en `main.tsx`.
+- [x] T045 [US1] `HomePage` orquesta `useStations` con sus 3 estados (LoadingState, ErrorState con retry, EmptyState con banner "Aún no se han recibido mediciones") y renderiza `MapView` en el camino feliz.
+- [x] T046 [US1] `HomePage` ya queda montada en `/` (la ruta se cableó en Phase 2 T025).
 
 **Checkpoint**: User Story 1 fully functional. Visitor sees colored markers on a Chile map and can open popups. App is deployable as a standalone MVP.
 
