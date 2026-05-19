@@ -41,7 +41,7 @@ export function MapView({ stations }: MapViewProps) {
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
         />
         {liveStations.map((station) => (
-          <StationMarker key={station.id} station={station} onSelect={setSelectedStationId}>
+          <StationMarker key={station.id} station={station}>
             <Popup>
               <StationPopup station={station} onOpenTrends={setSelectedStationId} />
             </Popup>

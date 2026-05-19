@@ -30,7 +30,7 @@ export function StationPanel() {
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/40 md:hidden"
+        className="fixed inset-0 z-[1010] bg-black/40 md:hidden"
         onClick={() => close(null)}
         aria-hidden
       />
@@ -38,7 +38,7 @@ export function StationPanel() {
         role="dialog"
         aria-modal="true"
         aria-label={`Tendencias de ${station.name}`}
-        className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-xl border-t border-border bg-background p-4 shadow-xl md:inset-y-0 md:left-auto md:right-0 md:h-full md:max-h-none md:w-[420px] md:rounded-none md:border-l md:border-t-0"
+        className="fixed inset-x-0 bottom-0 z-[1020] max-h-[85vh] overflow-y-auto rounded-t-xl border-t border-border bg-background p-4 shadow-xl md:inset-y-0 md:left-auto md:right-0 md:h-full md:max-h-none md:w-[420px] md:rounded-none md:border-l md:border-t-0"
       >
         <header className="mb-4 flex items-start justify-between gap-2">
           <div className="flex items-start gap-3">

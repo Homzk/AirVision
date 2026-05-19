@@ -6,7 +6,7 @@ import type { StationWithLatest } from '@/types/domain'
 
 interface StationMarkerProps {
   station: StationWithLatest
-  onSelect: (id: number) => void
+  onSelect?: (id: number) => void
   children?: ReactNode
 }
 
@@ -24,9 +24,7 @@ export function StationMarker({ station, onSelect, children }: StationMarkerProp
         fillColor: color,
         fillOpacity: 0.9,
       }}
-      eventHandlers={{
-        click: () => onSelect(station.id),
-      }}
+      eventHandlers={onSelect ? { click: () => onSelect(station.id) } : undefined}
     >
       {children}
     </CircleMarker>
