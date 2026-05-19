@@ -18,7 +18,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/hooks/**', 'src/utils/**', 'src/stores/**', 'src/lib/**'],
-      exclude: ['**/*.test.{ts,tsx}', 'src/test/**', 'src/lib/utils.ts'],
+      exclude: ['**/*.test.{ts,tsx}', 'src/test/**', 'src/lib/utils.ts', 'src/lib/supabase.ts'],
       thresholds: {
         lines: 70,
         functions: 70,

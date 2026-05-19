@@ -1,10 +1,22 @@
+import { Route, Routes } from 'react-router-dom'
+
+import { AppShell } from '@/components/layout/AppShell'
+import AlertsPage from '@/pages/AlertsPage'
+import FavoritesPage from '@/pages/FavoritesPage'
+import HomePage from '@/pages/HomePage'
+import LoginPage from '@/pages/LoginPage'
+import RegisterPage from '@/pages/RegisterPage'
+
 export default function App() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">AirVision</h1>
-        <p className="text-muted-foreground">Dashboard de calidad del aire — en construcción.</p>
-      </div>
-    </main>
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/favoritos" element={<FavoritesPage />} />
+        <Route path="/alertas" element={<AlertsPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/registro" element={<RegisterPage />} />
+      </Route>
+    </Routes>
   )
 }

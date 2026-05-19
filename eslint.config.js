@@ -11,6 +11,7 @@ export default tseslint.config(
       'dist',
       'coverage',
       'node_modules',
+      '.vite',
       'supabase/functions/**',
       '.husky',
       'src/types/database.ts',

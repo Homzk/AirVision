@@ -54,18 +54,19 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 
 ### Frontend foundation
 
-- [ ] T016 [P] Implement Supabase client singleton with `anon` key in `src/lib/supabase.ts` (typed against `src/types/database.ts`)
-- [ ] T017 [P] Implement `computeLevel`, `computeWorstLevel`, OMS thresholds, and `levelToColor` helpers in `src/lib/airQuality.ts`
-- [ ] T018 [P] Write unit tests for `airQuality.ts` covering all 4 levels per pollutant + worst-of + no-data path in `src/lib/airQuality.test.ts`
-- [ ] T019 [P] Define `POLLUTANTS`, `POLLUTANT_LABELS`, `POLLUTANT_UNITS`, `LEVEL_COLORS`, `DEFAULT_MAP_VIEW` (Chile bounding box + center) in `src/utils/constants.ts`
-- [ ] T020 [P] Implement date helpers (`rangeToSince`, `formatReadingTime`, `formatRelative`) in `src/utils/date.ts`
-- [ ] T021 [P] Write unit tests for `src/utils/date.ts` covering range conversion and formatting in `src/utils/date.test.ts`
-- [ ] T022 [P] Implement `AppShell` with header, mobile nav, and React Router outlet in `src/components/layout/AppShell.tsx`
-- [ ] T023 [P] Implement `Header` (logo + nav + auth state slot) in `src/components/layout/Header.tsx`
-- [ ] T024 [P] Implement `MobileNav` (bottom tabs at <768px) in `src/components/layout/MobileNav.tsx`
-- [ ] T025 Configure `App.tsx` with React Router routes for `/`, `/favoritos`, `/alertas`, `/login`, `/registro` (placeholders for now) in `src/App.tsx`
-- [ ] T026 Wire `main.tsx` with `<BrowserRouter>` and `<Toaster />` from `sonner` in `src/main.tsx`
-- [ ] T027 [P] Generic `LoadingState`, `ErrorState`, and `EmptyState` reusable components in `src/components/ui/LoadingState.tsx`, `src/components/ui/ErrorState.tsx`, `src/components/ui/EmptyState.tsx`
+- [x] T016 [P] Implement Supabase client singleton with `anon` key in `src/lib/supabase.ts` (typed against `src/types/database.ts`). Excluido de coverage en `vitest.config.ts` (es boilerplate de infra).
+- [x] T017 [P] Implement `computeLevel`, `computeWorstLevel`, OMS thresholds, `levelToColor`, `levelToLabel` helpers in `src/lib/airQuality.ts`. Paleta alineada con `tailwind.config.ts → colors.airQuality`.
+- [x] T018 [P] Write unit tests for `airQuality.ts` (26 tests: thresholds por pollutant, worst-of, no-data, color/label) in `src/lib/airQuality.test.ts`. Cobertura 100/100.
+- [x] T019 [P] Define `POLLUTANT_LABELS`, `POLLUTANT_UNITS`, `DEFAULT_MAP_VIEW`, `TIME_RANGES`, `TIME_RANGE_LABELS` (más type `TimeRange`) en `src/utils/constants.ts`. `POLLUTANTS` y `LEVEL_COLORS` viven en `airQuality.ts` para evitar ciclos.
+- [x] T020 [P] Implement date helpers (`rangeToSince`, `formatReadingTime`, `formatRelative`) en `src/utils/date.ts`. Usa `Intl.DateTimeFormat` y `Intl.RelativeTimeFormat` en `es-CL`/`es`.
+- [x] T021 [P] Unit tests for `src/utils/date.ts` (10 tests: rangos, mismo-día vs distinto-día, min/hora/día relativo) en `src/utils/date.test.ts`.
+- [x] T021b Extra: tests para `constants.ts` (verifica labels, units, center dentro de bounds, time ranges) en `src/utils/constants.test.ts` — necesario para mantener coverage del directorio.
+- [x] T022 [P] `AppShell` con Header arriba, `<Outlet />` central y `MobileNav` abajo en <md, en `src/components/layout/AppShell.tsx`.
+- [x] T023 [P] `Header` (logo + nav desktop con `NavLink` activo + slot vacío para auth de US3) en `src/components/layout/Header.tsx`.
+- [x] T024 [P] `MobileNav` (tabs fijos abajo con iconos lucide, oculto en md+) en `src/components/layout/MobileNav.tsx`.
+- [x] T025 `App.tsx` con rutas `/`, `/favoritos`, `/alertas`, `/login`, `/registro` envueltas en `AppShell`. Páginas placeholder creadas en `src/pages/*Page.tsx`.
+- [x] T026 `main.tsx` con `<BrowserRouter>` + `<Toaster richColors />` de `sonner`.
+- [x] T027 [P] `LoadingState`, `ErrorState` (con `onRetry` opcional), `EmptyState` en `src/components/ui/`. Iconos lucide, mensajes en español, ARIA `role`/`aria-live`.
 
 ### Ingestion pipeline (Supabase backend)
 
