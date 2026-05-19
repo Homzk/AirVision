@@ -126,22 +126,22 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 
 ### Hooks
 
-- [ ] T047 [P] [US2] Implement `useStationReadings(stationId, range)` hook returning the time-series for a station in `src/hooks/useStationReadings.ts`
-- [ ] T048 [P] [US2] Write integration tests for `useStationReadings` mocking the `.from('readings').select().eq().gte().order()` chain in `src/hooks/useStationReadings.test.ts`
+- [x] T047 [P] [US2] `useStationReadings(stationId, range)` en `src/hooks/useStationReadings.ts` — fetch inicial con `.gte(rangeToSince)` y subscribe filtrado `station_id=eq.${id}` para appendear inserts en vivo dentro del rango. Idle cuando `stationId === null`.
+- [x] T048 [P] [US2] Tests de `useStationReadings` (7: idle, fetch + canal, error, insert dentro de rango, insert fuera de rango ignorado, cleanup, re-fetch al cambiar rango) en `src/hooks/useStationReadings.test.ts`.
 
 ### Store (extended)
 
-- [ ] T049 [US2] Extend `dashboardStore` with `range: '6h' | '24h' | '7d'` + `setRange` action in `src/stores/dashboardStore.ts` (update its test file `dashboardStore.test.ts` accordingly)
+- [x] T049 [US2] `dashboardStore` extendido con `range: TimeRange` (default `'24h'`) + `setRange(range)`. Tests actualizados (default + setRange) en `src/stores/dashboardStore.test.ts`.
 
 ### Components
 
-- [ ] T050 [P] [US2] Implement `RangeSelector` (3 toggle buttons) in `src/components/dashboard/RangeSelector.tsx`
-- [ ] T051 [P] [US2] Write component test for `RangeSelector` covering click → store update in `src/components/dashboard/RangeSelector.test.tsx`
-- [ ] T052 [P] [US2] Implement `PollutantChart` (single Recharts `<LineChart>` for one pollutant, with empty/no-coverage message) in `src/components/dashboard/PollutantChart.tsx`
-- [ ] T053 [P] [US2] Write component test for `PollutantChart` covering data, empty (`null` series), and "not measured" branches in `src/components/dashboard/PollutantChart.test.tsx`
-- [ ] T054 [US2] Implement `ChartPanel` (three stacked `PollutantChart`s + `RangeSelector` + loading/error states) in `src/components/dashboard/ChartPanel.tsx`
-- [ ] T055 [US2] Implement `StationPanel` (slide-over panel on desktop, full-screen modal on mobile, containing `ChartPanel`; subscribes to `useReadingsRealtime` filtered by `station_id`) in `src/components/dashboard/StationPanel.tsx`
-- [ ] T056 [US2] Wire `StationMarker` / `StationPopup` "Ver tendencias" click to open `StationPanel` via `dashboardStore.setSelectedStationId(id)` in `src/components/map/StationPopup.tsx`
+- [x] T050 [P] [US2] `RangeSelector` (toggle pill con 3 botones, `aria-pressed`, lee/escribe en el store) en `src/components/dashboard/RangeSelector.tsx`.
+- [x] T051 [P] [US2] Tests de `RangeSelector` (3: render, pressed state, click → store) en `src/components/dashboard/RangeSelector.test.tsx`.
+- [x] T052 [P] [US2] `PollutantChart` con Recharts `LineChart` + `ResponsiveContainer`, `connectNulls`, color `hsl(var(--ring))`, branches "Sin datos en este rango" / "Sin cobertura de X en este rango" en `src/components/dashboard/PollutantChart.tsx`.
+- [x] T053 [P] [US2] Tests de `PollutantChart` (3: empty, no cobertura, render normal con dataKey correcto) — Recharts mockeado para que jsdom no pelee con el SVG en `src/components/dashboard/PollutantChart.test.tsx`.
+- [x] T054 [US2] `ChartPanel` con header "Tendencias" + `RangeSelector` + 3 `PollutantChart` apilados + estados loading/error desde `useStationReadings` en `src/components/dashboard/ChartPanel.tsx`.
+- [x] T055 [US2] `StationPanel` como slide-over right (md+) / bottom sheet (mobile) con backdrop, ESC para cerrar, header con nombre/ciudad/nivel + botón X, embebe `ChartPanel(stationId)`. Realtime per-station vive dentro de `useStationReadings`, no aquí. En `src/components/dashboard/StationPanel.tsx`.
+- [x] T056 [US2] Wiring del "Ver tendencias" del `StationPopup` ya existía desde US1 (`onOpenTrends → setSelectedStationId`). `StationPanel` montado en `src/pages/HomePage.tsx` después de `MapView` para que el slide-over flote sobre el mapa.
 
 **Checkpoint**: User Stories 1 AND 2 work. Mapa + tendencias realtime.
 

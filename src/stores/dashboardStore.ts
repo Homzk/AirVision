@@ -1,18 +1,22 @@
 import { create } from 'zustand'
 
 import type { Reading, StationWithLatest } from '@/types/domain'
+import type { TimeRange } from '@/utils/constants'
 
 interface DashboardState {
   selectedStationId: number | null
   stationsById: Record<number, StationWithLatest>
+  range: TimeRange
   setStations: (stations: StationWithLatest[]) => void
   applyNewReading: (reading: Reading) => void
   setSelectedStationId: (id: number | null) => void
+  setRange: (range: TimeRange) => void
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
   selectedStationId: null,
   stationsById: {},
+  range: '24h',
 
   setStations: (stations) =>
     set(() => ({
@@ -44,4 +48,6 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     }),
 
   setSelectedStationId: (id) => set({ selectedStationId: id }),
+
+  setRange: (range) => set({ range }),
 }))

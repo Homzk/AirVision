@@ -1,4 +1,5 @@
 import { MapView } from '@/components/map/MapView'
+import { StationPanel } from '@/components/dashboard/StationPanel'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { LoadingState } from '@/components/ui/LoadingState'
@@ -27,5 +28,10 @@ export default function HomePage() {
     )
   }
 
-  return <MapView stations={stations} />
+  return (
+    <>
+      <MapView stations={stations} />
+      <StationPanel />
+    </>
+  )
 }

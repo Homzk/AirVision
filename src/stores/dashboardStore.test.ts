@@ -30,7 +30,7 @@ function mkReading(overrides: Partial<Reading> = {}): Reading {
 }
 
 beforeEach(() => {
-  useDashboardStore.setState({ selectedStationId: null, stationsById: {} })
+  useDashboardStore.setState({ selectedStationId: null, stationsById: {}, range: '24h' })
 })
 
 describe('dashboardStore', () => {
@@ -102,5 +102,16 @@ describe('dashboardStore', () => {
     expect(useDashboardStore.getState().selectedStationId).toBe(42)
     useDashboardStore.getState().setSelectedStationId(null)
     expect(useDashboardStore.getState().selectedStationId).toBeNull()
+  })
+
+  it('starts with the 24h time range by default', () => {
+    expect(useDashboardStore.getState().range).toBe('24h')
+  })
+
+  it('setRange updates the active range', () => {
+    useDashboardStore.getState().setRange('7d')
+    expect(useDashboardStore.getState().range).toBe('7d')
+    useDashboardStore.getState().setRange('6h')
+    expect(useDashboardStore.getState().range).toBe('6h')
   })
 })
