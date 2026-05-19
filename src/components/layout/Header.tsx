@@ -1,4 +1,4 @@
-import { Wind } from 'lucide-react'
+import { LogIn, LogOut, Wind } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
@@ -46,21 +46,24 @@ export function Header() {
             ))}
           </nav>
 
+          <span aria-hidden className="hidden h-5 w-px bg-border md:inline-block" />
+
           <div className="flex items-center gap-2 text-sm" aria-label="Estado de sesión">
             {status === 'authenticated' && user && (
               <>
-                <span
-                  className="hidden text-muted-foreground sm:inline-block"
-                  title={user.email ?? ''}
-                >
-                  {user.email}
-                </span>
+                {user.email && (
+                  <span className="hidden text-muted-foreground sm:inline-block" title={user.email}>
+                    {user.email}
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => void signOut()}
-                  className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  aria-label="Cerrar sesión"
+                  className="grid h-8 w-8 place-items-center rounded-md border border-input text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 sm:text-sm sm:font-medium"
                 >
-                  Cerrar sesión
+                  <LogOut aria-hidden className="h-4 w-4 sm:hidden" />
+                  <span className="hidden sm:inline">Cerrar sesión</span>
                 </button>
               </>
             )}
@@ -68,13 +71,15 @@ export function Header() {
               <>
                 <Link
                   to="/login"
-                  className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
+                  aria-label="Iniciar sesión"
+                  className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 sm:text-sm sm:font-medium sm:hover:bg-transparent"
                 >
-                  Iniciar sesión
+                  <LogIn aria-hidden className="h-4 w-4 sm:hidden" />
+                  <span className="hidden sm:inline">Iniciar sesión</span>
                 </Link>
                 <Link
                   to="/registro"
-                  className="rounded-md bg-orange-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-orange-700"
+                  className="rounded-md border border-orange-600/40 px-3 py-1.5 text-sm font-medium text-orange-600 transition-colors hover:border-orange-600 hover:bg-orange-600/5"
                 >
                   Registrarse
                 </Link>
