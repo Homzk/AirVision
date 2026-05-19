@@ -1,0 +1,16 @@
+# Placeholder config — replaced by `supabase init` or `supabase link --project-ref <ref>`.
+# Edited values here are used only by the local CLI when running outside `supabase start`.
+project_id = "airvision"
+
+[api]
+enabled = true
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
