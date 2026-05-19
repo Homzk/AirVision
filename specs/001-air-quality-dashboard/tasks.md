@@ -183,24 +183,26 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 
 ### Database
 
-- [ ] T069 [US4] Create migration `supabase/migrations/0003_user_favorites.sql` with `user_favorites` table, `user_favorites_user_idx` index, RLS policies (select/insert/delete own), and `enforce_favorites_limit` trigger (BEFORE INSERT, max 10)
-- [ ] T070 [US4] Apply migration and regenerate types: `supabase db reset && supabase gen types typescript --local > src/types/database.ts`
+- [x] T069 [US4] Migración `supabase/migrations/0003_user_favorites.sql`: tabla con PK compuesta `(user_id, station_id)`, FKs a `auth.users` y `stations` con `ON DELETE CASCADE`, índice `(user_id, created_at DESC)`, RLS habilitada con políticas `select/insert/delete_own` y trigger `enforce_favorites_limit` (BEFORE INSERT) que aborta con `Máximo 10 estaciones favoritas por usuario` cuando se supera el tope.
+- [x] T070 [US4] Aplicada con `supabase db push` y regenerados los tipos con `supabase gen types typescript --linked | Out-File -Encoding utf8` (per memoria `feedback-pwsh-utf8-redirect`). `user_favorites` ahora aparece en `src/types/database.ts`.
 
 ### Hook
 
-- [ ] T071 [P] [US4] Implement `useFavorites()` hook (list, add, remove; maps trigger error to "Has alcanzado el máximo de 10 estaciones favoritas") in `src/hooks/useFavorites.ts`
-- [ ] T072 [P] [US4] Write integration tests for `useFavorites` mocking insert/delete/select chains and error mapping in `src/hooks/useFavorites.test.ts`
+- [x] T071 [P] [US4] `useFavorites()` en `src/hooks/useFavorites.ts` envuelve un `favoritesStore` (Zustand) con `Set<number>` deduplicado y `loadedForUserId` para evitar fetches repetidos entre consumidores. Expone `favorites`, `isFavorite`, `canAddMore`, `add`, `remove`. Hace `reset()` al cerrar sesión y `load()` al autenticarse. Limit pre-check en cliente + mapeo del error del trigger a "Has alcanzado el máximo de 10…". Caso `23505` (duplicate) es silent-success.
+- [x] T072 [P] [US4] Tests de `useFavorites` (8: anónimo idle, load autenticado, add success, add con tope local, add con error de trigger, add duplicate 23505 silencioso, remove success, reset al cerrar sesión) en `src/hooks/useFavorites.test.ts`.
+- [x] T072b [US4] `favoritesStore` (Zustand) en `src/stores/favoritesStore.ts` — fuente única para que `StationPopup`, `StationPanel`, `FavoritesPage` queden sincronizados sin múltiples fetches. Tests cubren su lógica indirectamente vía useFavorites.
 
 ### Components
 
-- [ ] T073 [P] [US4] Implement `FavoriteButton` (star toggle; disabled state when limit reached) in `src/components/favorites/FavoriteButton.tsx`
-- [ ] T074 [P] [US4] Write component test for `FavoriteButton` covering toggle + limit-reached message in `src/components/favorites/FavoriteButton.test.tsx`
-- [ ] T075 [P] [US4] Implement `FavoriteCard` (station name, current level badge, last reading values, "Ver tendencias" button) in `src/components/favorites/FavoriteCard.tsx`
-- [ ] T076 [P] [US4] Write component test for `FavoriteCard` rendering current level and "sin datos" branch in `src/components/favorites/FavoriteCard.test.tsx`
-- [ ] T077 [US4] Implement `FavoritesList` (renders `FavoriteCard`s; empty state with instructions) in `src/components/favorites/FavoritesList.tsx`
-- [ ] T078 [US4] Implement `FavoritesPage` wrapped in `AuthGate` in `src/pages/FavoritesPage.tsx`
-- [ ] T079 [US4] Integrate `FavoriteButton` into `StationPopup` and into `StationPanel` header in `src/components/map/StationPopup.tsx` and `src/components/dashboard/StationPanel.tsx`
-- [ ] T080 [US4] Mount `/favoritos` route to `FavoritesPage` in `src/App.tsx`
+- [x] T073 [P] [US4] `FavoriteButton` 32×32 icon button con estrella `lucide-react`, `aria-label` cambia entre "Agregar/Quitar de favoritos" + `aria-pressed`, estrella se rellena de `orange-600` cuando favorita. Disabled (sin click, con title tooltip) si se alcanzó el tope. Hidden si el usuario es anónimo. En `src/components/favorites/FavoriteButton.tsx`.
+- [x] T074 [P] [US4] Tests de `FavoriteButton` (6: hidden en anónimo, agregar render, quitar render, click → insert + toast success, disabled al tope con tooltip, toast error en error del backend) en `src/components/favorites/FavoriteButton.test.tsx`.
+- [x] T075 [P] [US4] `FavoriteCard` con badge de nivel, 3 contaminantes (reusa `PollutantCell`), timestamp, botón "Ver tendencias" (selecciona station + navigate /) y `Trash2` para quitar. En `src/components/favorites/FavoriteCard.tsx`.
+- [x] T076 [P] [US4] Tests de `FavoriteCard` (4: render normal, branch sin-datos, remove → toast + store update, ver-tendencias → setSelectedStationId + navigate) en `src/components/favorites/FavoriteCard.test.tsx`.
+- [x] T076b [US4] `PollutantCell` extraído a `src/components/ui/PollutantCell.tsx` y reusado en `StationPopup` y `FavoriteCard` — single source of truth para "label + valor + unidad" de un contaminante.
+- [x] T077 [US4] `FavoritesList` con grid responsive (`sm:grid-cols-2`) y empty state ("Aún no tienes favoritos…" con icono estrella) en `src/components/favorites/FavoritesList.tsx`.
+- [x] T078 [US4] `FavoritesPage` envuelta en `<AuthGate>`. Subcomponente `FavoritesContent` combina `useStations` + `useFavorites`, filtra y ordena por `favorites` (DESC `created_at` desde el fetch), muestra contador "N de 10 estaciones marcadas". En `src/pages/FavoritesPage.tsx`.
+- [x] T079 [US4] `FavoriteButton` integrado en `StationPopup` (junto al botón "Ver tendencias", se oculta solo cuando es anónimo) y en `StationPanel` header (junto al botón cerrar). En `src/components/map/StationPopup.tsx` y `src/components/dashboard/StationPanel.tsx`.
+- [x] T080 [US4] Ruta `/favoritos` ya estaba montada en `App.tsx` (Phase 2 T025). FavoritesPage ahora renderiza contenido real en lugar del stub.
 
 **Checkpoint**: Favoritos completos. Sólo falta US5.
 

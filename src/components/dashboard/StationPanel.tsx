@@ -1,6 +1,7 @@
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 
+import { FavoriteButton } from '@/components/favorites/FavoriteButton'
 import { computeWorstLevel, levelToColor, levelToLabel } from '@/lib/airQuality'
 import { useDashboardStore } from '@/stores/dashboardStore'
 
@@ -53,14 +54,17 @@ export function StationPanel() {
               <p className="mt-0.5 text-xs text-muted-foreground">{levelToLabel(level)}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => close(null)}
-            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Cerrar panel"
-          >
-            <X aria-hidden className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <FavoriteButton stationId={station.id} />
+            <button
+              type="button"
+              onClick={() => close(null)}
+              className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label="Cerrar panel"
+            >
+              <X aria-hidden className="h-4 w-4" />
+            </button>
+          </div>
         </header>
         <ChartPanel stationId={station.id} />
       </aside>

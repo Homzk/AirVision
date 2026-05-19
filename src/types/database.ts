@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -106,6 +106,32 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      user_favorites: {
+        Row: {
+          created_at: string
+          station_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          station_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          station_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

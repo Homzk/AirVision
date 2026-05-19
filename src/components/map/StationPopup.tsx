@@ -1,29 +1,12 @@
-import {
-  computeWorstLevel,
-  levelToColor,
-  levelToLabel,
-  POLLUTANTS,
-  type Pollutant,
-} from '@/lib/airQuality'
-import { cn } from '@/lib/utils'
+import { FavoriteButton } from '@/components/favorites/FavoriteButton'
+import { PollutantCell } from '@/components/ui/PollutantCell'
+import { computeWorstLevel, levelToColor, levelToLabel, POLLUTANTS } from '@/lib/airQuality'
 import type { StationWithLatest } from '@/types/domain'
-import { POLLUTANT_LABELS, POLLUTANT_UNITS } from '@/utils/constants'
 import { formatReadingTime } from '@/utils/date'
 
 interface StationPopupProps {
   station: StationWithLatest
   onOpenTrends?: (id: number) => void
-}
-
-function PollutantCell({ pollutant, value }: { pollutant: Pollutant; value: number | null }) {
-  return (
-    <div className="flex flex-col">
-      <dt className="text-xs text-muted-foreground">{POLLUTANT_LABELS[pollutant]}</dt>
-      <dd className={cn('text-sm font-medium', value === null && 'text-muted-foreground')}>
-        {value === null ? '—' : `${value.toFixed(0)} ${POLLUTANT_UNITS[pollutant]}`}
-      </dd>
-    </div>
-  )
 }
 
 export function StationPopup({ station, onOpenTrends }: StationPopupProps) {
@@ -61,15 +44,18 @@ export function StationPopup({ station, onOpenTrends }: StationPopupProps) {
         <p className="text-xs text-muted-foreground">Sin datos recientes</p>
       )}
 
-      {onOpenTrends && (
-        <button
-          type="button"
-          onClick={() => onOpenTrends(station.id)}
-          className="w-full rounded-md bg-foreground/90 px-3 py-1.5 text-xs font-medium text-background transition-colors hover:bg-foreground"
-        >
-          Ver tendencias
-        </button>
-      )}
+      <div className="flex items-center gap-2">
+        <FavoriteButton stationId={station.id} />
+        {onOpenTrends && (
+          <button
+            type="button"
+            onClick={() => onOpenTrends(station.id)}
+            className="flex-1 rounded-md bg-foreground/90 px-3 py-1.5 text-xs font-medium text-background transition-colors hover:bg-foreground"
+          >
+            Ver tendencias
+          </button>
+        )}
+      </div>
     </div>
   )
 }
