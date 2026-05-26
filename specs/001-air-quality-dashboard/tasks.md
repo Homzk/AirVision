@@ -266,7 +266,7 @@ description: 'Task list for AirVision MVP — Dashboard de Calidad del Aire en T
 - [ ] T110 [P] Schedule the `ingest-openaq` Edge Function in Supabase Cloud at `*/15 * * * *` via `supabase functions schedule create ingest-openaq --cron "*/15 * * * *"` (one-off ops step)
 - [ ] T111 [P] Deploy to Vercel with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` configured in project env vars (one-off ops step)
 - [ ] T112 [P] Run a coverage report (`npm run test:coverage`) and confirm thresholds pass on `src/hooks/`, `src/utils/`, `src/stores/`. Fix any shortfalls by adding missing tests in the corresponding `.test.ts(x)` files
-- [ ] T113 [P] Write `README.md` at repo root with project pitch (in Spanish summary, English body), screenshots of map + panel + alerts, setup steps cross-linking `specs/001-air-quality-dashboard/quickstart.md`, and tech stack badges
+- [x] T113 [P] `README.md` en la raíz (en español): pitch, features US1–US5, stack con versiones, diagrama de arquitectura, setup local, tests, sección Spec-Driven Development y roadmap; badges de stack + coverage + licencia. `LICENSE` MIT agregado. Screenshots quedan en T114 (placeholder en sección Demo).
 - [ ] T114 [P] Capture 3 screenshots (`docs/screenshots/map.png`, `dashboard.png`, `alerts.png`) for the README
 - [ ] T115 Run the full Quality Gates checklist from constitution (build / typecheck / lint / tests + coverage / security review / architectural review / UX review) and resolve any failures
 - [ ] T116 Final pass: open the deployed Vercel URL, walk through US1→US5 as a user (no DevTools), confirm Spanish copy is correct and tones are consistent, record a 60-second screencast for the portfolio
