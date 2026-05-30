@@ -157,8 +157,10 @@ No es un bug. Las dos vistas leen `readings` con criterios distintos:
   reciente es más vieja que el rango, no hay puntos que graficar.
 
 Es decir: el mapa puede verse "vivo" mientras la ingesta está detenida y
-los datos envejecieron fuera de la ventana de 24 h (ver deuda #6 en
-`NOTES.md` — cron de ingesta sin verificar en prod).
+los datos envejecieron fuera de la ventana de 24 h. En prod esto **no es
+hipotético**: no hay ingesta automática (deuda #6 en `NOTES.md`, verificada
+2026-05-30 — cero Edge Functions desplegadas), así que los `readings` solo
+se reponen re-sembrando `seed.sql` a mano.
 
 **Cómo verificarlo**: en Supabase Studio, abrir la tabla `readings`,
 ordenar por `measured_at` descendente y mirar el timestamp más reciente.
