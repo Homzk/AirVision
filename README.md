@@ -6,7 +6,7 @@
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%C2%B7%20Auth%20%C2%B7%20Realtime-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vitest](https://img.shields.io/badge/Vitest-2.1-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Coverage](https://img.shields.io/badge/coverage-97.5%25%20líneas-success)](#tests)
+[![Coverage](https://img.shields.io/badge/coverage-97.25%25%20líneas-success)](#tests)
 [![License](https://img.shields.io/badge/license-MIT-blue)](#licencia)
 
 ---
@@ -21,9 +21,17 @@ El problema que resuelve es concreto: la información de calidad del aire suele 
 
 ## Demo
 
-<!-- TODO(T114): screenshot principal del dashboard (mapa con popups) -->
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/map.png" alt="Mapa de Chile con marcadores coloreados y el popup de una estación abierto"></td>
+    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="Panel de tendencias con gráficos de PM2.5, PM10 y O₃ y selector de rango"></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/alerts.png" alt="Pantalla de alertas con una alerta configurada y el badge de no leídas"></td>
+  </tr>
+</table>
 
-> _Screenshots en camino (tarea T114). Mientras tanto, ver la sección [Features](#features) para el detalle de cada pantalla._
+> Mapa interactivo · panel de tendencias en tiempo real · alertas personalizadas. Detalle de cada pantalla en [Features](#features).
 
 ## Features
 
@@ -163,8 +171,8 @@ npm run test:coverage  # corre con reporte de cobertura
 
 **Métricas actuales:**
 
-- ✅ **161 tests** pasando
-- 📊 **97.5% de cobertura de líneas** · **90.8% de ramas**
+- ✅ **166 tests** pasando
+- 📊 **97.25% de cobertura de líneas** · **90.36% de ramas**
 - 🎯 Umbral mínimo (_gate_) configurado: **70% líneas / 65% ramas** sobre `src/hooks/`, `src/utils/`, `src/stores/` y `src/lib/`
 
 Los tests cubren la lógica pura (clasificación de niveles contra umbrales OMS, formateo de fechas), los stores de Zustand (transiciones de estado), los hooks con Supabase mockeado (`vi.mock()`, sin red real) y los componentes de formulario y visualización. Tests E2E con Playwright están fuera del alcance del MVP por decisión de la constitución.
