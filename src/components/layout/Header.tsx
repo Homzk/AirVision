@@ -2,6 +2,7 @@ import { LogIn, LogOut, Wind } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 
 import { AlertBadge } from '@/components/alerts/AlertBadge'
+import { ReconnectingIndicator } from '@/components/layout/ReconnectingIndicator'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -46,6 +47,8 @@ export function Header() {
               </NavLink>
             ))}
           </nav>
+
+          <ReconnectingIndicator />
 
           <span aria-hidden className="hidden h-5 w-px bg-border md:inline-block" />
 

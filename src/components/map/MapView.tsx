@@ -3,6 +3,7 @@ import { MapContainer, Popup, TileLayer } from 'react-leaflet'
 
 import { useReadingsRealtime } from '@/hooks/useReadingsRealtime'
 import { useDashboardStore } from '@/stores/dashboardStore'
+import { useRealtimeStore } from '@/stores/realtimeStore'
 import type { StationWithLatest } from '@/types/domain'
 import { DEFAULT_MAP_VIEW } from '@/utils/constants'
 
@@ -20,11 +21,23 @@ export function MapView({ stations }: MapViewProps) {
   const applyNewReading = useDashboardStore((s) => s.applyNewReading)
   const setSelectedStationId = useDashboardStore((s) => s.setSelectedStationId)
 
+  const setRealtimeStatus = useRealtimeStore((s) => s.setStatus)
+
   useEffect(() => {
     setStations(stations)
   }, [stations, setStations])
 
-  useReadingsRealtime(applyNewReading)
+  const { status: realtimeStatus } = useReadingsRealtime(applyNewReading)
+
+  // Publica el estado del canal para que el indicador del header lo refleje,
+  // y lo restaura a CONNECTED al salir del mapa (el canal se cierra al desmontar).
+  useEffect(() => {
+    setRealtimeStatus(realtimeStatus)
+  }, [realtimeStatus, setRealtimeStatus])
+
+  useEffect(() => {
+    return () => setRealtimeStatus('CONNECTED')
+  }, [setRealtimeStatus])
 
   const liveStations = useMemo(() => Object.values(stationsById), [stationsById])
 
