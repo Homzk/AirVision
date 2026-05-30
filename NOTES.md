@@ -44,6 +44,13 @@ Estas decisiones quedaron grabadas en `specs/001-air-quality-dashboard/spec.md` 
 
 5. **`useStationReadings` doble suscripción Realtime** — `MapView` mantiene un canal `readings:inserts` global (todas las estaciones) y `useStationReadings` abre un segundo canal `readings:station:${id}` filtrado al abrir el panel. Es redundante pero correcto. Refactor a un solo canal con dispatch interno queda en backlog.
 
+6. **Cron de ingesta en prod sin verificar** — durante el desarrollo los `readings` se sembraban a mano (`seed.sql`) o corriendo la Edge Function `ingest-openaq` manualmente. **Pendiente confirmar** si el cron `*/15 * * * *` está realmente activo como job programado en producción (`supabase functions schedule list`) o si nunca se llegó a agendar. Si está inactivo, no entran lecturas nuevas y los `readings` sembrados envejecen fuera de la ventana de 24 h: el mapa sigue pintando color (la vista `latest_station_readings` toma la última lectura sin filtrar por fecha) pero las tendencias quedan vacías (filtran por rango 6h/24h/7d). Ver el escenario T109 documentado en `quickstart.md`.
+
+## Aprendizajes del deploy (T111)
+
+- **La env var de producción exige la _legacy anon key_ (formato `eyJ…`, JWT), NO la nueva `sb_publishable_…`.** Es la misma decisión que la memoria `feedback-legacy-supabase-keys`: el `supabase-js` v2 instalado funciona con la key legada. En Vercel, `VITE_SUPABASE_ANON_KEY` debe ser el JWT `eyJ…` con `role:"anon"`.
+- **Vite hornea las env vars en _build time_, no en runtime.** Las `VITE_*` se inlinean dentro del bundle durante `vite build`. Consecuencia operativa: **cualquier cambio de variable de entorno en Vercel NO surte efecto hasta un redeploy** — no basta con editar la variable en el dashboard y recargar la página. Tras tocar `VITE_SUPABASE_URL` o `VITE_SUPABASE_ANON_KEY` hay que disparar un nuevo deploy.
+
 ## Pendientes — Phase 8 Polish (orden sugerido)
 
 Ordenado por valor/riesgo, no por dependencia (los items son mayormente independientes):

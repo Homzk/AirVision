@@ -357,11 +357,35 @@ auth.users (Supabase)  ──┐
 
 ## Mapeo Entidad-spec → tabla
 
-| Entidad del spec  | Tabla            | Notas                                             |
-| ----------------- | ---------------- | ------------------------------------------------- |
-| Estación          | `stations`       | Sin estado de ciclo de vida (Q3 → D)              |
-| Lectura           | `readings`       | Wide format (Q4 implícito); pm25/pm10/o3 nullable |
-| Usuario           | `auth.users`     | Provisto por Supabase Auth                        |
-| Favorito          | `user_favorites` | Límite 10 por trigger                             |
-| Alerta            | `alerts`         | `is_armed` implementa edge-trigger (Q1)           |
-| Disparo de alerta | `alert_history`  | `seen` implementa el badge (Q2); rotación a 20    |
+| Entidad del spec  | Tabla            | Notas                                              |
+| ----------------- | ---------------- | -------------------------------------------------- |
+| Estación          | `stations`       | Sin estado de ciclo de vida (Q3 → D)               |
+| Lectura           | `readings`       | Wide format (Q4 implícito); pm25/pm10/o3 nullable  |
+| Usuario           | `auth.users`     | Provisto por Supabase Auth — sin `public.profiles` |
+| Favorito          | `user_favorites` | Límite 10 por trigger                              |
+| Alerta            | `alerts`         | `is_armed` implementa edge-trigger (Q1)            |
+| Disparo de alerta | `alert_history`  | `seen` implementa el badge (Q2); rotación a 20     |
+
+---
+
+## Decisión: sin tabla `public.profiles` (YAGNI)
+
+El MVP **deliberadamente NO incluye** una tabla `public.profiles` espejo de
+`auth.users`. Justificación:
+
+- **El MVP no consume datos de perfil.** No hay display name ni avatar en
+  ninguna pantalla; nada que mostrar justifica una tabla de perfil.
+- **Los FKs de usuario apuntan directo a `auth.users.id`.** Tanto
+  `user_favorites.user_id` como `alerts.user_id` y `alert_history.user_id`
+  referencian `auth.users(id)` directamente, sin pasar por un perfil.
+- **El email sale de la sesión de Auth** (`supabase.auth.getUser()` →
+  `user.email`), no de una columna en `public`.
+- **No hay trigger `on_auth_user_created`.** El patrón típico de Supabase
+  (crear una fila en `profiles` al registrarse vía trigger sobre
+  `auth.users`) no aplica aquí porque no hay tabla destino.
+
+Si una iteración futura necesita personalización (nombre visible, avatar,
+preferencias), se agrega `public.profiles (id UUID PK REFERENCES auth.users)`
+
+- el trigger `on_auth_user_created` en una migración nueva. Hasta entonces
+  sería complejidad sin uso.

@@ -140,6 +140,40 @@ supabase functions schedule create ingest-openaq --cron "*/15 * * * *"
 
 Verificar con `supabase functions schedule list`.
 
+## Escenario T109: datos rancios / DB sin datos frescos
+
+Síntoma confuso: **un marcador del mapa pinta color (verde/amarillo/rojo)
+pero al abrir sus tendencias los tres gráficos salen vacíos** con el empty
+state "Sin datos en este rango".
+
+No es un bug. Las dos vistas leen `readings` con criterios distintos:
+
+- **El color del marcador** sale de la vista `latest_station_readings`,
+  que hace `DISTINCT ON (station_id) … ORDER BY measured_at DESC` —
+  toma la **última** lectura de la estación **sin filtrar por fecha**.
+  Mientras exista cualquier lectura histórica, el marcador tiene color.
+- **Las tendencias** (`useStationReadings`) filtran `readings` por el
+  rango activo (`measured_at >= now() - 6h/24h/7d`). Si la lectura más
+  reciente es más vieja que el rango, no hay puntos que graficar.
+
+Es decir: el mapa puede verse "vivo" mientras la ingesta está detenida y
+los datos envejecieron fuera de la ventana de 24 h (ver deuda #6 en
+`NOTES.md` — cron de ingesta sin verificar en prod).
+
+**Cómo verificarlo**: en Supabase Studio, abrir la tabla `readings`,
+ordenar por `measured_at` descendente y mirar el timestamp más reciente.
+Equivalente en SQL:
+
+```sql
+SELECT max(measured_at) AS ultima_lectura,
+       now() - max(measured_at) AS antiguedad
+FROM readings;
+```
+
+Si `antiguedad` supera las 24 h, las tendencias estarán vacías para todo
+rango ≤ 24 h aunque los marcadores sigan coloreados. La solución es
+reactivar la ingesta (cron `*/15 * * * *`) o re-sembrar con `seed.sql`.
+
 ## Troubleshooting
 
 - **El mapa carga pero está vacío**: ejecutar pasos 4 y 5. Sin
