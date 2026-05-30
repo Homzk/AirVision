@@ -17,8 +17,8 @@ export function StationPopup({ station, onOpenTrends }: StationPopupProps) {
   return (
     <div className="min-w-[220px] space-y-2 text-sm">
       <header className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-semibold leading-tight">{station.name}</p>
+        <div className="min-w-0">
+          <p className="break-words font-semibold leading-tight">{station.name}</p>
           {station.city && <p className="text-xs text-muted-foreground">{station.city}</p>}
         </div>
         <span

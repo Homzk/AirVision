@@ -69,7 +69,7 @@ export function AlertHistory({ stationsById }: AlertHistoryProps) {
             <li key={entry.id}>
               <article className="rounded-lg border border-border bg-card p-3">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm font-medium">{stationName}</p>
+                  <p className="min-w-0 break-words text-sm font-medium">{stationName}</p>
                   {!entry.seen && (
                     <span
                       className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-orange-600"

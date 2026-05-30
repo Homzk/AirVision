@@ -42,14 +42,14 @@ export function FavoriteCard({ station }: FavoriteCardProps) {
   return (
     <article className="space-y-3 rounded-lg border border-border bg-card p-4">
       <header className="flex items-start justify-between gap-2">
-        <div className="flex items-start gap-2">
+        <div className="flex min-w-0 items-start gap-2">
           <span
             className="mt-1 inline-block h-3 w-3 shrink-0 rounded-full"
             style={{ backgroundColor: levelToColor(level) }}
             aria-hidden
           />
-          <div>
-            <h3 className="font-medium leading-tight">{station.name}</h3>
+          <div className="min-w-0">
+            <h3 className="break-words font-medium leading-tight">{station.name}</h3>
             {station.city && <p className="text-xs text-muted-foreground">{station.city}</p>}
             <p className="mt-0.5 text-xs text-muted-foreground">{levelToLabel(level)}</p>
           </div>

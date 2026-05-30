@@ -42,14 +42,14 @@ export function StationPanel() {
         className="fixed inset-x-0 bottom-0 z-[1020] max-h-[85vh] overflow-y-auto rounded-t-xl border-t border-border bg-background p-4 shadow-xl md:inset-y-0 md:left-auto md:right-0 md:h-full md:max-h-none md:w-[420px] md:rounded-none md:border-l md:border-t-0"
       >
         <header className="mb-4 flex items-start justify-between gap-2">
-          <div className="flex items-start gap-3">
+          <div className="flex min-w-0 items-start gap-3">
             <span
               className="mt-1 inline-block h-3 w-3 shrink-0 rounded-full"
               style={{ backgroundColor: levelToColor(level) }}
               aria-hidden
             />
-            <div>
-              <h2 className="text-lg font-semibold leading-tight">{station.name}</h2>
+            <div className="min-w-0">
+              <h2 className="break-words text-lg font-semibold leading-tight">{station.name}</h2>
               {station.city && <p className="text-xs text-muted-foreground">{station.city}</p>}
               <p className="mt-0.5 text-xs text-muted-foreground">{levelToLabel(level)}</p>
             </div>

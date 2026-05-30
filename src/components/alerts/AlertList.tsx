@@ -45,12 +45,12 @@ export function AlertList({ stationsById }: AlertListProps) {
         return (
           <li key={alert.id}>
             <article className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-medium">
                   {POLLUTANT_LABELS[alert.pollutant]} {symbol} {alert.threshold}{' '}
                   {POLLUTANT_UNITS[alert.pollutant]}
                 </p>
-                <p className="text-xs text-muted-foreground">{stationName}</p>
+                <p className="break-words text-xs text-muted-foreground">{stationName}</p>
                 <p className="mt-0.5 text-xs">
                   <span className={alert.is_armed ? 'text-emerald-600' : 'text-muted-foreground'}>
                     {alert.is_armed ? 'Armada' : 'Esperando re-arme'}

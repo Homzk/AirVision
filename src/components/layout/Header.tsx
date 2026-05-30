@@ -54,7 +54,10 @@ export function Header() {
               <>
                 <AlertBadge />
                 {user.email && (
-                  <span className="hidden text-muted-foreground sm:inline-block" title={user.email}>
+                  <span
+                    className="hidden max-w-[180px] truncate text-muted-foreground sm:inline-block"
+                    title={user.email}
+                  >
                     {user.email}
                   </span>
                 )}
