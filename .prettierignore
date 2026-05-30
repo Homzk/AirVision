@@ -5,3 +5,7 @@ package-lock.json
 supabase/functions/**/dist
 .husky
 src/types/database.ts
+
+# Tooling vendado de Spec Kit (no es código de la aplicación)
+.specify
+.claude
