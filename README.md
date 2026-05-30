@@ -2,6 +2,7 @@
 
 **Dashboard de calidad del aire de Chile en tiempo real: mapa interactivo, tendencias históricas y alertas personalizadas.**
 
+[![Demo en vivo](https://img.shields.io/badge/demo-en%20vivo-FF6B00?logo=vercel&logoColor=white)](https://air-vision-xi.vercel.app/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%C2%B7%20Auth%20%C2%B7%20Realtime-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
@@ -20,6 +21,8 @@ Es un **proyecto de portafolio** construido para demostrar prácticas profesiona
 El problema que resuelve es concreto: la información de calidad del aire suele estar dispersa en portales gubernamentales poco amigables. AirVision la centraliza en una interfaz en español, responsive y con actualización en vivo, donde un vecino de Santiago, Concepción o Temuco puede ver de un vistazo si el aire de su comuna está en niveles saludables.
 
 ## Demo
+
+**🔗 [Ver la demo en vivo →](https://air-vision-xi.vercel.app/)** — desplegada en Vercel (frontend) + Supabase Cloud (backend).
 
 <table>
   <tr>
@@ -196,11 +199,7 @@ El proyecto se rige además por una **constitución** ([`.specify/memory/constit
 
 ## Roadmap
 
-**Pendiente — Phase 8 (Polish):**
-
-- Verificación responsive a 360px en las seis pantallas principales.
-- `ReconnectingIndicator` en el header reflejando el estado de los canales Realtime.
-- Deploy a Vercel con variables de entorno configuradas.
+**Phase 8 (Polish) — ✅ completada:** verificación responsive a 360px, `ReconnectingIndicator` de estado Realtime en el header, **deploy a Vercel en vivo** con variables de entorno configuradas, README + screenshots, y los siete Quality Gates de la constitución en verde.
 
 **Diferido — feature 002 (post-MVP):**
 

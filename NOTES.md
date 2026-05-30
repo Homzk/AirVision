@@ -27,6 +27,7 @@ Estas decisiones quedaron grabadas en `specs/001-air-quality-dashboard/spec.md` 
 
 ## Configuración actual
 
+- **Producción (en vivo)**: https://air-vision-xi.vercel.app/ — Vercel + Supabase Cloud, público (verificado en incógnito), con `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` configuradas en Vercel. **Ojo**: la URL de deployment con hash (`air-vision-<hash>-…vercel.app`) devuelve 401 a anónimos (Deployment Protection) y cambia en cada deploy — usar siempre el dominio estable `air-vision-xi`. Recordar que un cambio de env var en Vercel exige redeploy (Vite hornea en build time, ver Aprendizajes del deploy).
 - **Supabase Cloud** (sin Docker local) — todas las migraciones se aplican con `supabase db push` contra la BD remota.
 - **Tipos generados con `supabase gen types typescript --linked`** y pipeados por `Out-File -Encoding utf8` para evitar el bug de UTF-16 de PowerShell 5.1 (ver memoria `feedback-pwsh-utf8-redirect`).
 - **Datos sintéticos en `supabase/seed.sql`**: 12 estaciones de Chile (Santiago x4, Valparaíso, Concepción, Rancagua, Talca, Chillán, Temuco, Coyhaique, Puente Alto) + 24 lecturas horarias por estación con bases variadas para mostrar toda la paleta de niveles. El seed es idempotente (`ON CONFLICT DO NOTHING`).
