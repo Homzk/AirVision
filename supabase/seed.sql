@@ -1,13 +1,13 @@
 -- seed.sql
--- Datos sintéticos para desarrollo: 12 estaciones de Chile + 24 h de lecturas
+-- Datos sintéticos para desarrollo: 13 estaciones de Chile + 24 h de lecturas
 -- horarias por estación. NO es seed automático en `supabase db push`; córrelo
 -- manualmente desde Studio (SQL Editor) o `psql` apuntando a la BD remota.
 --
 -- Idempotente: usa ON CONFLICT en ambas tablas. Re-correrlo agrega readings
 -- nuevas en los huecos del rolling window de 24 h (las viejas se conservan).
 -- Borra las filas sembradas cuando conectes la ingesta real de OpenAQ:
---   DELETE FROM readings  WHERE station_id BETWEEN 1 AND 12;
---   DELETE FROM stations  WHERE id         BETWEEN 1 AND 12;
+--   DELETE FROM readings  WHERE station_id BETWEEN 1 AND 13;
+--   DELETE FROM stations  WHERE id         BETWEEN 1 AND 13;
 
 INSERT INTO stations (id, name, latitude, longitude, country_code, city) VALUES
     (1,  'Parque O''Higgins',     -33.4642, -70.6614, 'CL', 'Santiago'),
@@ -21,7 +21,8 @@ INSERT INTO stations (id, name, latitude, longitude, country_code, city) VALUES
     (9,  'Rancagua centro',       -34.1708, -70.7444, 'CL', 'Rancagua'),
     (10, 'Talca centro',          -35.4264, -71.6554, 'CL', 'Talca'),
     (11, 'Chillán centro',        -36.6066, -72.1034, 'CL', 'Chillán'),
-    (12, 'Coyhaique',             -45.5712, -72.0680, 'CL', 'Coyhaique')
+    (12, 'Coyhaique',             -45.5712, -72.0680, 'CL', 'Coyhaique'),
+    (13, 'Antofagasta centro',    -23.6509, -70.3975, 'CL', 'Antofagasta')
 ON CONFLICT (id) DO NOTHING;
 
 -- 24 lecturas por estación (una por hora, terminando en now()), con bases
@@ -46,5 +47,6 @@ FROM (
     UNION ALL SELECT 10, generate_series(0, 23), 32,  70, 60
     UNION ALL SELECT 11, generate_series(0, 23), 40,  80, 70
     UNION ALL SELECT 12, generate_series(0, 23), 70, 170, 90
+    UNION ALL SELECT 13, generate_series(0, 23), 10,  25, 25
 ) s
 ON CONFLICT (station_id, measured_at) DO NOTHING;
