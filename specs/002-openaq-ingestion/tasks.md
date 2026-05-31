@@ -12,6 +12,8 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **Organization**: Tareas agrupadas por historia de usuario. Las 3 historias comparten las Edge Functions, por eso el módulo compartido `_shared/openaq.ts` (con toda la lógica pura) vive en Foundational y bloquea a `seed-stations` y `ingest-openaq`.
 
+> **Estado de implementación (2026-05-30)**: todo el **código** está escrito (Deno + migraciones). Los pasos de **ops** que requieren `supabase login`/deploy/credenciales (T011, T013, T014, T017, T020, T021) quedan para el owner — documentados en `quickstart.md`. **Deno no está instalado en el entorno de desarrollo**, así que los tests (`_shared/openaq.test.ts`) están escritos pero NO ejecutados aquí; correr `deno task test` (o en CI). **Añadido fuera del plan original**: migración `0014_ingest_readings_fn.sql` — una función RPC para el upsert `COALESCE` (FR-006), porque `supabase-js .upsert()` sobrescribe NULLs y borraría valores parciales.
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Puede correr en paralelo (otro archivo, sin dependencias incompletas)
@@ -24,9 +26,9 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **Purpose**: Estructura de las Edge Functions y tooling de Deno.
 
-- [ ] T001 Crear la estructura de carpetas de funciones (reemplaza el stub `_shared/.gitkeep`): `supabase/functions/_shared/`, `supabase/functions/seed-stations/`, `supabase/functions/ingest-openaq/`
-- [ ] T002 [P] Configurar Deno para las funciones en `supabase/functions/deno.json` (tasks `test`/`fmt`/`lint`, imports de `@supabase/supabase-js` y `std`)
-- [ ] T003 [P] Verificar que `.env.example` ya documenta `OPENAQ_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (existen desde Phase 1 del 001); no agregar secrets reales
+- [x] T001 Crear la estructura de carpetas de funciones (reemplaza el stub `_shared/.gitkeep`): `supabase/functions/_shared/`, `supabase/functions/seed-stations/`, `supabase/functions/ingest-openaq/`
+- [x] T002 [P] Configurar Deno para las funciones en `supabase/functions/deno.json` (tasks `test`/`fmt`/`lint`, imports de `@supabase/supabase-js` y `std`)
+- [x] T003 [P] Verificar que `.env.example` ya documenta `OPENAQ_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (existen desde Phase 1 del 001); no agregar secrets reales
 
 ---
 
@@ -36,11 +38,11 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **⚠️ CRITICAL**: Ninguna historia puede implementarse hasta completar esta fase.
 
-- [ ] T004 Definir tipos y constantes del payload v3 en `supabase/functions/_shared/openaq.ts`: `PARAM_ID = { pm10:1, pm25:2, o3:3 }`, tipo `Pollutant`, interfaces `OpenAQLocation` y `OpenAQLatest`
-- [ ] T005 Implementar el cliente HTTP en `supabase/functions/_shared/openaq.ts`: header `X-API-Key`, reintentos con backoff exponencial 1s/2s/4s ante 429/5xx, paginación automática — `fetchLocations(bbox)` (async iterable) y `fetchLocationLatest(locationId)`
-- [ ] T006 Implementar validación y frescura en `supabase/functions/_shared/openaq.ts`: `isInvalidReading(pollutant, value)` (negativo o > 10× umbral hazardous) e `isStale(measuredAtUtc, maxAgeHours=3)` (regla R-fresh)
-- [ ] T007 Implementar la normalización long→wide en `supabase/functions/_shared/openaq.ts`: `normalizeLatest(locationId, latest[], sensorCatalog)` que agrupa por `(locationsId, datetime.utc)`, mapea `sensorsId→pollutant`, descarta inválidos y rancios, y emite filas `{ station_id, measured_at, pm25?, pm10?, o3? }`
-- [ ] T008 Tests Deno de la lógica pura en `supabase/functions/_shared/openaq.test.ts` (`fetch` mockeado): paginación, retry/backoff, `isInvalidReading`, `isStale` (límite de frescura), mapeo sensor→contaminante, y `normalizeLatest` (cobertura parcial, sensor muerto descartado, duplicado por (estación,instante))
+- [x] T004 Definir tipos y constantes del payload v3 en `supabase/functions/_shared/openaq.ts`: `PARAM_ID = { pm10:1, pm25:2, o3:3 }`, tipo `Pollutant`, interfaces `OpenAQLocation` y `OpenAQLatest`
+- [x] T005 Implementar el cliente HTTP en `supabase/functions/_shared/openaq.ts`: header `X-API-Key`, reintentos con backoff exponencial 1s/2s/4s ante 429/5xx, paginación automática — `fetchLocations(bbox)` (async iterable) y `fetchLocationLatest(locationId)`
+- [x] T006 Implementar validación y frescura en `supabase/functions/_shared/openaq.ts`: `isInvalidReading(pollutant, value)` (negativo o > 10× umbral hazardous) e `isStale(measuredAtUtc, maxAgeHours=3)` (regla R-fresh)
+- [x] T007 Implementar la normalización long→wide en `supabase/functions/_shared/openaq.ts`: `normalizeLatest(locationId, latest[], sensorCatalog)` que agrupa por `(locationsId, datetime.utc)`, mapea `sensorsId→pollutant`, descarta inválidos y rancios, y emite filas `{ station_id, measured_at, pm25?, pm10?, o3? }`
+- [x] T008 Tests Deno de la lógica pura en `supabase/functions/_shared/openaq.test.ts` (`fetch` mockeado): paginación, retry/backoff, `isInvalidReading`, `isStale` (límite de frescura), mapeo sensor→contaminante, y `normalizeLatest` (cobertura parcial, sensor muerto descartado, duplicado por (estación,instante))
 
 **Checkpoint**: módulo compartido listo y probado → las dos funciones pueden construirse.
 
@@ -52,8 +54,8 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **Independent Test**: invocar `seed-stations`, aplicar la migración de limpieza, y confirmar en Studio ~150 estaciones `country_code='CL'` y 0 estaciones con id 1–13.
 
-- [ ] T009 [US1] Implementar la Edge Function `seed-stations` en `supabase/functions/seed-stations/index.ts`: `fetchLocations(bboxChile)` con `?parameters_id=1,2,3` → mapear a `stations` (id=`location.id`, name, city=`locality`, lat/lon=`coordinates`, country_code=`country.code`) → upsert `ON CONFLICT (id) DO UPDATE` con `service_role` → responder `{ ok, summary:{ stations_upserted } }`
-- [ ] T010 [US1] Crear la migración de limpieza en `supabase/migrations/0013_remove_synthetic_seed.sql`: `DELETE FROM stations WHERE id BETWEEN 1 AND 13;` (arrastra `readings` por `ON DELETE CASCADE`; idempotente)
+- [x] T009 [US1] Implementar la Edge Function `seed-stations` en `supabase/functions/seed-stations/index.ts`: `fetchLocations(bboxChile)` con `?parameters_id=1,2,3` → mapear a `stations` (id=`location.id`, name, city=`locality`, lat/lon=`coordinates`, country_code=`country.code`) → upsert `ON CONFLICT (id) DO UPDATE` con `service_role` → responder `{ ok, summary:{ stations_upserted } }`
+- [x] T010 [US1] Crear la migración de limpieza en `supabase/migrations/0013_remove_synthetic_seed.sql`: `DELETE FROM stations WHERE id BETWEEN 1 AND 13;` (arrastra `readings` por `ON DELETE CASCADE`; idempotente)
 - [ ] T011 [US1] Verificación (quickstart §2–§5): desplegar e invocar `seed-stations`, aplicar `0013` con `supabase db push`, confirmar ~150 estaciones CL reales y 0 sintéticas en el mapa
 
 **Checkpoint**: el mapa muestra la red real sin estaciones falsas (US1 demostrable).
@@ -66,7 +68,7 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **Independent Test**: invocar `ingest-openaq` y ver `readings` nuevas; esperar un ciclo del cron y confirmar que `max(measured_at)` avanza solo; con el mapa abierto, los marcadores se repintan en vivo.
 
-- [ ] T012 [US2] Implementar la Edge Function `ingest-openaq` en `supabase/functions/ingest-openaq/index.ts`: cargar los `station_id` (SELECT de `stations`) → por cada uno `fetchLocationLatest(id)` con throttling (<60 req/min) → `normalizeLatest` → upsert batch a `readings` `ON CONFLICT (station_id, measured_at) DO UPDATE COALESCE` con `service_role` → responder `{ ok, summary }`. Siempre 200 aunque OpenAQ falle
+- [x] T012 [US2] Implementar la Edge Function `ingest-openaq` en `supabase/functions/ingest-openaq/index.ts`: cargar los `station_id` (SELECT de `stations`) → por cada uno `fetchLocationLatest(id)` con throttling (<60 req/min) → `normalizeLatest` → upsert batch a `readings` `ON CONFLICT (station_id, measured_at) DO UPDATE COALESCE` con `service_role` → responder `{ ok, summary }`. Siempre 200 aunque OpenAQ falle
 - [ ] T013 [US2] Agendar el cron `*/15 * * * *` para `ingest-openaq` en Supabase Cloud (dashboard → Schedules, o `pg_cron` + `pg_net`); `seed-stations` NO se agenda — paso de ops documentado en quickstart §6
 - [ ] T014 [US2] Verificación (quickstart §4, §7): invocar `ingest-openaq` (summary con `rows_upserted>0`), esperar >15 min y confirmar que entran lecturas solas, y que el marcador se actualiza en vivo sin recargar
 
@@ -80,8 +82,8 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **Independent Test**: una estación con O₃ inactivo muestra PM2.5/PM10 actuales y O₃ "sin datos recientes" (no un valor de 2021); ningún valor negativo/absurdo llega a `readings`.
 
-- [ ] T015 [US3] Cablear en `supabase/functions/ingest-openaq/index.ts` el filtrado vía `isStale` e `isInvalidReading` (ya aplicados dentro de `normalizeLatest`) y exponer los conteos `skipped_stale` y `skipped_invalid` en el `summary` (FR-010)
-- [ ] T016 [US3] Extender los tests Deno en `supabase/functions/_shared/openaq.test.ts` con los casos foco de US3: sensor muerto (O₃ con `datetime` de 2021) descartado mientras PM2.5/PM10 frescos pasan; valor negativo y outlier descartados; reporte parcial que conserva el valor previo (semántica COALESCE a nivel de fila normalizada)
+- [x] T015 [US3] Cablear en `supabase/functions/ingest-openaq/index.ts` el filtrado vía `isStale` e `isInvalidReading` (ya aplicados dentro de `normalizeLatest`) y exponer los conteos `skipped_stale` y `skipped_invalid` en el `summary` (FR-010)
+- [x] T016 [US3] Extender los tests Deno en `supabase/functions/_shared/openaq.test.ts` con los casos foco de US3: sensor muerto (O₃ con `datetime` de 2021) descartado mientras PM2.5/PM10 frescos pasan; valor negativo y outlier descartados; reporte parcial que conserva el valor previo (semántica COALESCE a nivel de fila normalizada)
 - [ ] T017 [US3] Verificación (quickstart §7): tomar una estación con O₃ inactivo y confirmar PM2.5/PM10 actuales + O₃ sin datos recientes; confirmar `skipped_stale>0` en el summary del primer ciclo
 
 **Checkpoint**: las tres historias operativas; la calidad de datos está garantizada.

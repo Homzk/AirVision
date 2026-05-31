@@ -9,3 +9,6 @@ src/types/database.ts
 # Tooling vendado de Spec Kit (no es código de la aplicación)
 .specify
 .claude
+
+# Edge Functions Deno: se formatean con `deno fmt`, no con el Prettier del frontend
+supabase/functions
