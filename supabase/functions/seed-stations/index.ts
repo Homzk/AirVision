@@ -8,7 +8,7 @@
 // Secrets requeridos (server-side): OPENAQ_API_KEY, SUPABASE_URL,
 // SUPABASE_SERVICE_ROLE_KEY. NUNCA exponer service_role al cliente.
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 import { BBOX_CHILE, fetchLocations } from '../_shared/openaq.ts'
 
