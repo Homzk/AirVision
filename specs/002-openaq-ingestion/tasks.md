@@ -56,7 +56,7 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 - [x] T009 [US1] Implementar la Edge Function `seed-stations` en `supabase/functions/seed-stations/index.ts`: `fetchLocations(bboxChile)` con `?parameters_id=1,2,3` → mapear a `stations` (id=`location.id`, name, city=`locality`, lat/lon=`coordinates`, country_code=`country.code`) → upsert `ON CONFLICT (id) DO UPDATE` con `service_role` → responder `{ ok, summary:{ stations_upserted } }`
 - [x] T010 [US1] Crear la migración de limpieza en `supabase/migrations/0013_remove_synthetic_seed.sql`: `DELETE FROM stations WHERE id BETWEEN 1 AND 13;` (arrastra `readings` por `ON DELETE CASCADE`; idempotente)
-- [ ] T011 [US1] Verificación (quickstart §2–§5): desplegar e invocar `seed-stations`, aplicar `0013` con `supabase db push`, confirmar ~150 estaciones CL reales y 0 sintéticas en el mapa
+- [x] T011 [US1] Verificación (quickstart §2–§5): desplegar e invocar `seed-stations`, aplicar `0013` con `supabase db push`, confirmar ~150 estaciones CL reales y 0 sintéticas en el mapa
 
 **Checkpoint**: el mapa muestra la red real sin estaciones falsas (US1 demostrable).
 
@@ -70,7 +70,7 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 - [x] T012 [US2] Implementar la Edge Function `ingest-openaq` en `supabase/functions/ingest-openaq/index.ts`: cargar los `station_id` (SELECT de `stations`) → por cada uno `fetchLocationLatest(id)` con throttling (<60 req/min) → `normalizeLatest` → upsert batch a `readings` `ON CONFLICT (station_id, measured_at) DO UPDATE COALESCE` con `service_role` → responder `{ ok, summary }`. Siempre 200 aunque OpenAQ falle
 - [ ] T013 [US2] Agendar el cron `*/15 * * * *` para `ingest-openaq` en Supabase Cloud (dashboard → Schedules, o `pg_cron` + `pg_net`); `seed-stations` NO se agenda — paso de ops documentado en quickstart §6
-- [ ] T014 [US2] Verificación (quickstart §4, §7): invocar `ingest-openaq` (summary con `rows_upserted>0`), esperar >15 min y confirmar que entran lecturas solas, y que el marcador se actualiza en vivo sin recargar
+- [x] T014 [US2] Verificación (quickstart §4, §7): invocar `ingest-openaq` (summary con `rows_upserted>0`), esperar >15 min y confirmar que entran lecturas solas, y que el marcador se actualiza en vivo sin recargar
 
 **Checkpoint**: datos reales fluyen automáticamente; resuelve la deuda #6 (US1 + US2 operativas).
 
@@ -84,7 +84,7 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 - [x] T015 [US3] Cablear en `supabase/functions/ingest-openaq/index.ts` el filtrado vía `isStale` e `isInvalidReading` (ya aplicados dentro de `normalizeLatest`) y exponer los conteos `skipped_stale` y `skipped_invalid` en el `summary` (FR-010)
 - [x] T016 [US3] Extender los tests Deno en `supabase/functions/_shared/openaq.test.ts` con los casos foco de US3: sensor muerto (O₃ con `datetime` de 2021) descartado mientras PM2.5/PM10 frescos pasan; valor negativo y outlier descartados; reporte parcial que conserva el valor previo (semántica COALESCE a nivel de fila normalizada)
-- [ ] T017 [US3] Verificación (quickstart §7): tomar una estación con O₃ inactivo y confirmar PM2.5/PM10 actuales + O₃ sin datos recientes; confirmar `skipped_stale>0` en el summary del primer ciclo
+- [x] T017 [US3] Verificación (quickstart §7): tomar una estación con O₃ inactivo y confirmar PM2.5/PM10 actuales + O₃ sin datos recientes; confirmar `skipped_stale>0` en el summary del primer ciclo
 
 **Checkpoint**: las tres historias operativas; la calidad de datos está garantizada.
 
