@@ -22,7 +22,7 @@ desde el navegador. El frontend no las conoce.
 (`*/15 * * * *`), configurado en el dashboard de Supabase o vía
 `supabase functions schedule create`.
 
-**Trigger manual** (debugging): `supabase functions invoke ingest-openaq`
+**Trigger manual** (debugging): POST HTTP a `https://<ref>.supabase.co/functions/v1/ingest-openaq` con header `Authorization: Bearer <anon_key>` (la CLI no tiene `functions invoke`).
 
 ### Input
 
@@ -114,8 +114,9 @@ normalización y validación. La invocación a OpenAQ se mockea con
 
 ## `seed-stations`
 
-**Invocación**: Manual, una vez por entorno.
-`supabase functions invoke seed-stations`
+**Invocación**: Manual, una vez por entorno. POST HTTP a
+`https://<ref>.supabase.co/functions/v1/seed-stations` con header
+`Authorization: Bearer <anon_key>` (la CLI no tiene `functions invoke`).
 
 ### Input
 
