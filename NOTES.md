@@ -1,11 +1,36 @@
 # AirVision — Session notes
 
-**Última actualización**: 2026-05-19
+**Última actualización**: 2026-05-30
 **Branch**: `main` (todos los commits empujados a `origin/main`)
+
+## ▶ PRÓXIMA SESIÓN (retomar aquí)
+
+**Feature 002 (ingesta real OpenAQ) está VIVA** — falta solo el último paso:
+
+1. **Agendar el cron `*/15`** (T013): pegar en Studio SQL Editor el `pg_cron` +
+   `pg_net` de `quickstart.md §6` → `cron.schedule('ingest-openaq-15min', '*/15 * * * *', ...)`
+   con `net.http_post` a `.../functions/v1/ingest-openaq` y header `Authorization: Bearer <anon>`.
+   Verificar: `select jobname, schedule, active from cron.job;` y luego
+   `select status, start_time from cron.job_run_details order by start_time desc limit 3;`.
+2. **Tras confirmar el cron**: T018/T019 — mover "Ingesta real OpenAQ" de _Diferido_
+   a hecho en el Roadmap del `README.md` y cerrar la deuda #6 (ya no aplica).
+
+**Estado en vivo** (https://air-vision-xi.vercel.app/): **169 estaciones reales** de
+Chile cargadas, **107 readings reales** ingestadas (1ª corrida manual; el cron las
+refresca solo cuando se agende). Secrets ya en Supabase: `OPENAQ_API_KEY`,
+`INGEST_THROTTLE_MS=500`. Las 3 migraciones (0013 limpieza seed, 0014 RPC, 0015 grants)
+aplicadas. `deno test` 11/11. Helper de invocación: `bash scripts/invoke-function.sh <fn>`
+(la CLI no tiene `functions invoke` → se llaman por HTTP).
 
 ## Estado actual
 
-Cuerpo del feature `001-air-quality-dashboard` completo:
+`001-air-quality-dashboard` **completo y desplegado** (Phase 8 incluida: responsive,
+ReconnectingIndicator, deploy Vercel, screenshots, Quality Gates 7/7). 166 tests front.
+
+`002-openaq-ingestion` **implementado y verificado en producción** (código Deno + 3
+migraciones + 11 tests Deno); solo pendiente agendar el cron (ver arriba).
+
+Cuerpo del feature `001-air-quality-dashboard`:
 
 - **US1** Mapa interactivo con marcadores coloreados por worst-of (PM2.5/PM10/O₃) — ✅
 - **US2** Tendencias temporales con `RangeSelector` 6h/24h/7d + realtime per-station — ✅
@@ -31,11 +56,12 @@ Estas decisiones quedaron grabadas en `specs/001-air-quality-dashboard/spec.md` 
 - **Supabase Cloud** (sin Docker local) — todas las migraciones se aplican con `supabase db push` contra la BD remota.
 - **Tipos generados con `supabase gen types typescript --linked`** y pipeados por `Out-File -Encoding utf8` para evitar el bug de UTF-16 de PowerShell 5.1 (ver memoria `feedback-pwsh-utf8-redirect`).
 - **Datos sintéticos en `supabase/seed.sql`**: 12 estaciones de Chile (Santiago x4, Valparaíso, Concepción, Rancagua, Talca, Chillán, Temuco, Coyhaique, Puente Alto) + 24 lecturas horarias por estación con bases variadas para mostrar toda la paleta de niveles. El seed es idempotente (`ON CONFLICT DO NOTHING`).
-- **OpenAQ diferido a feature 002 post-MVP** (tasks T028–T032 marcadas `[deferred]`): cuando exista una `OPENAQ_API_KEY` y se quiera ingesta real, hay que implementar `supabase/functions/_shared/openaq.ts` + `seed-stations` + `ingest-openaq` + agendar cron `*/15 * * * *`. Mientras tanto el seed sintético basta para US1+US2 visualmente y para probar US4/US5 funcionalmente.
+- **Ingesta OpenAQ IMPLEMENTADA (feature 002, 2026-05-30)**: `supabase/functions/_shared/openaq.ts` + `seed-stations` + `ingest-openaq` desplegadas y verificadas en vivo. El seed sintético (`seed.sql`) quedó obsoleto: la migración `0013` borró las estaciones 1–13 y ahora hay 169 estaciones reales de Chile (SINCA). Detalle en `specs/002-openaq-ingestion/`. Falta solo agendar el cron (ver "Próxima sesión").
+  - **IDs de parámetro OpenAQ v3**: pm10=1, pm25=2, o3=3 (variante µg/m³ mass; O₃ también existe como ppm=10/ppb=32 — NO usar). Mediciones por `/locations/{id}/latest` (NO existe `/measurements?bbox`). Regla **R-fresh**: descartar lecturas >3h por-contaminante (sensores muertos devuelven valores de años atrás en `/latest`).
 
 ## Deuda técnica conocida
 
-1. **GRANTs olvidados en migraciones** — la migración `0012_alert_history_grants.sql` se añadió como hotfix porque la policy `alert_history_update_own` nunca llegaba a evaluarse: faltaba `GRANT UPDATE (seen) ON alert_history TO authenticated`. **Pendiente auditoría completa** sobre las otras tablas (`stations`, `readings`, `user_favorites`, `alerts`): aunque INSERT/DELETE funcionaron en el desarrollo, es posible que dependan de defaults de Supabase Cloud que podrían no existir en una nueva instancia. Hay que verificar `information_schema.table_privileges` y agregar GRANTs explícitos donde falten.
+1. **GRANTs olvidados en migraciones** — `0012_alert_history_grants.sql` (hotfix `alert_history`) y, **confirmado en feature 002**, `0015_grant_service_role.sql`: el `service_role` no tenía INSERT/UPDATE en `stations`/`readings` (la ingesta real dio `42501 permission denied for table stations`; el seed sintético nunca lo destapó porque se cargaba desde Studio como owner). **0015 lo resolvió para `stations` y `readings`.** **Pendiente aún**: auditar `user_favorites` y `alerts` (esas funcionan por anon/authenticated + RLS, pero conviene verificar `information_schema.table_privileges` por si dependen de defaults de Supabase Cloud).
 
 2. **Numeración inconsistente de migraciones** — el orden histórico es `0001, 0002, 0003, 0004, 0005, 0007, 0009, 0010, 0011, 0012` con huecos en `0006`/`0008` (que en `data-model.md` originalmente eran `0006_rls_policies` y `0008_alert_limits_trigger`, ambos inlinados dentro de las migraciones de tabla). Esto funciona pero no es elegante. **Considerar migrar a timestamps** (`20260519143000_...`) que es la convención por defecto de la CLI de Supabase, en una refactorización futura. No bloquea nada.
 
@@ -45,16 +71,16 @@ Estas decisiones quedaron grabadas en `specs/001-air-quality-dashboard/spec.md` 
 
 5. **`useStationReadings` doble suscripción Realtime** — `MapView` mantiene un canal `readings:inserts` global (todas las estaciones) y `useStationReadings` abre un segundo canal `readings:station:${id}` filtrado al abrir el panel. Es redundante pero correcto. Refactor a un solo canal con dispatch interno queda en backlog.
 
-6. **No hay ingesta automática en prod (VERIFICADO 2026-05-30)** — `supabase functions list` contra prod devuelve **cero** Edge Functions desplegadas, y `supabase/functions/` solo contiene `_shared/.gitkeep`: la función `ingest-openaq` nunca se implementó (T028–T032 quedaron `[deferred]` a feature 002). Por lo tanto **no existe ningún cron `*/15 * * * *` activo y no puede existir** — no hay función que agendar. En prod los `readings` son únicamente los que se siembran a mano con `seed.sql` desde Studio; el desarrollo dependió 100% del seed sintético, NO de correr la Edge Function (que no existe). **Implicación**: los datos envejecen sin reposición; pasadas 24 h el mapa sigue coloreado (la vista `latest_station_readings` toma la última lectura sin filtrar por fecha) pero las tendencias quedan vacías (filtran por rango 6h/24h/7d) — exactamente el escenario T109 de `quickstart.md`, que en prod es el estado estacionario garantizado, no un caso límite. **Acción para datos siempre frescos**: implementar la ingesta real (feature 002) o re-correr `seed.sql` periódicamente.
+6. ~~**No hay ingesta automática en prod**~~ **RESUELTO (feature 002)** — las Edge Functions `seed-stations` e `ingest-openaq` están desplegadas y funcionando; la 1ª corrida manual escribió 107 readings reales. **Solo queda agendar el cron `*/15`** (ver "Próxima sesión") para que el refresco sea automático; hasta entonces hay que invocar `ingest-openaq` a mano. Una vez agendado el cron, el escenario T109 de datos rancios deja de ser el estado estacionario en prod.
 
 ## Aprendizajes del deploy (T111)
 
 - **La env var de producción exige la _legacy anon key_ (formato `eyJ…`, JWT), NO la nueva `sb_publishable_…`.** Es la misma decisión que la memoria `feedback-legacy-supabase-keys`: el `supabase-js` v2 instalado funciona con la key legada. En Vercel, `VITE_SUPABASE_ANON_KEY` debe ser el JWT `eyJ…` con `role:"anon"`.
 - **Vite hornea las env vars en _build time_, no en runtime.** Las `VITE_*` se inlinean dentro del bundle durante `vite build`. Consecuencia operativa: **cualquier cambio de variable de entorno en Vercel NO surte efecto hasta un redeploy** — no basta con editar la variable en el dashboard y recargar la página. Tras tocar `VITE_SUPABASE_URL` o `VITE_SUPABASE_ANON_KEY` hay que disparar un nuevo deploy.
 
-## Pendientes — Phase 8 Polish (orden sugerido)
+## Phase 8 Polish — ✅ COMPLETADA (histórico)
 
-Ordenado por valor/riesgo, no por dependencia (los items son mayormente independientes):
+Todas estas tareas ya están hechas (T106–T116, con T116 omitido por decisión). Se deja el listado como registro:
 
 1. **T113 + T114 README + screenshots** — primero porque el commit final es el README. Screenshots: `/` (mapa con popups), `/alertas` (panel con dialog abierto), `/favoritos` (cards). Mobile screenshots opcionales.
 2. **T106 sweep responsive 360px** — abrir DevTools en 360 px y revisar las 6 pantallas: `/`, popup, `StationPanel` (slide-over mobile), `/favoritos`, `/alertas`, `/login`, `/registro`. Arreglar cualquier scroll horizontal u overlap.
