@@ -76,7 +76,7 @@ async function fetchJson(path: string, attempt = 0): Promise<{ results?: unknown
 
 /** Itera todas las locations chilenas con sensor pm10/pm25/o3 (paginación auto). */
 export async function* fetchLocations(bbox: string = BBOX_CHILE): AsyncIterable<OpenAQLocation> {
-  for (let page = 1; ; page++) {
+  for (let page = 1;; page++) {
     const data = await fetchJson(
       `/locations?parameters_id=1,2,3&bbox=${bbox}&limit=1000&page=${page}`,
     )

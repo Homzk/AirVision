@@ -25,7 +25,10 @@ function withFetch(
       const url = typeof input === 'string' ? input : input.toString()
       const { status = 200, body } = handler(url)
       return Promise.resolve(
-        new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } }),
+        new Response(JSON.stringify(body), {
+          status,
+          headers: { 'content-type': 'application/json' },
+        }),
       )
     }
     try {
@@ -84,7 +87,9 @@ const CATALOG = new Map<number, Pollutant>([
   [114, 'o3'],
 ])
 
-function latest(partial: Partial<OpenAQLatest> & { sensorsId: number; value: number; utc: string }): OpenAQLatest {
+function latest(
+  partial: Partial<OpenAQLatest> & { sensorsId: number; value: number; utc: string },
+): OpenAQLatest {
   return {
     sensorsId: partial.sensorsId,
     value: partial.value,
@@ -94,23 +99,39 @@ function latest(partial: Partial<OpenAQLatest> & { sensorsId: number; value: num
 }
 
 Deno.test('normalizeLatest: 3 contaminantes frescos → fila ancha completa', () => {
-  const r = normalizeLatest(25, [
-    latest({ sensorsId: 1044, value: 67, utc: '2026-05-30T20:00:00Z' }),
-    latest({ sensorsId: 1047, value: 158, utc: '2026-05-30T20:00:00Z' }),
-    latest({ sensorsId: 114, value: 40, utc: '2026-05-30T20:00:00Z' }),
-  ], CATALOG, NOW)
+  const r = normalizeLatest(
+    25,
+    [
+      latest({ sensorsId: 1044, value: 67, utc: '2026-05-30T20:00:00Z' }),
+      latest({ sensorsId: 1047, value: 158, utc: '2026-05-30T20:00:00Z' }),
+      latest({ sensorsId: 114, value: 40, utc: '2026-05-30T20:00:00Z' }),
+    ],
+    CATALOG,
+    NOW,
+  )
   assertExists(r.reading)
-  assertEquals(r.reading, { station_id: 25, measured_at: '2026-05-30T20:00:00Z', pm25: 67, pm10: 158, o3: 40 })
+  assertEquals(r.reading, {
+    station_id: 25,
+    measured_at: '2026-05-30T20:00:00Z',
+    pm25: 67,
+    pm10: 158,
+    o3: 40,
+  })
   assertEquals(r.skippedStale, 0)
   assertEquals(r.skippedInvalid, 0)
 })
 
 Deno.test('normalizeLatest: sensor O₃ muerto (2021) se descarta, pm25/pm10 pasan', () => {
-  const r = normalizeLatest(25, [
-    latest({ sensorsId: 1044, value: 67, utc: '2026-05-30T20:00:00Z' }),
-    latest({ sensorsId: 1047, value: 158, utc: '2026-05-30T20:00:00Z' }),
-    latest({ sensorsId: 114, value: 0.59, utc: '2021-08-20T20:00:00Z' }), // dead
-  ], CATALOG, NOW)
+  const r = normalizeLatest(
+    25,
+    [
+      latest({ sensorsId: 1044, value: 67, utc: '2026-05-30T20:00:00Z' }),
+      latest({ sensorsId: 1047, value: 158, utc: '2026-05-30T20:00:00Z' }),
+      latest({ sensorsId: 114, value: 0.59, utc: '2021-08-20T20:00:00Z' }), // dead
+    ],
+    CATALOG,
+    NOW,
+  )
   assertEquals(r.reading?.pm25, 67)
   assertEquals(r.reading?.pm10, 158)
   assertEquals(r.reading?.o3, null) // descartado por frescura
@@ -118,11 +139,16 @@ Deno.test('normalizeLatest: sensor O₃ muerto (2021) se descarta, pm25/pm10 pas
 })
 
 Deno.test('normalizeLatest: valor negativo/outlier descartado', () => {
-  const r = normalizeLatest(25, [
-    latest({ sensorsId: 1044, value: -5, utc: '2026-05-30T20:00:00Z' }),
-    latest({ sensorsId: 1047, value: 99999, utc: '2026-05-30T20:00:00Z' }),
-    latest({ sensorsId: 114, value: 40, utc: '2026-05-30T20:00:00Z' }),
-  ], CATALOG, NOW)
+  const r = normalizeLatest(
+    25,
+    [
+      latest({ sensorsId: 1044, value: -5, utc: '2026-05-30T20:00:00Z' }),
+      latest({ sensorsId: 1047, value: 99999, utc: '2026-05-30T20:00:00Z' }),
+      latest({ sensorsId: 114, value: 40, utc: '2026-05-30T20:00:00Z' }),
+    ],
+    CATALOG,
+    NOW,
+  )
   assertEquals(r.reading?.pm25, null)
   assertEquals(r.reading?.pm10, null)
   assertEquals(r.reading?.o3, 40)
@@ -130,56 +156,83 @@ Deno.test('normalizeLatest: valor negativo/outlier descartado', () => {
 })
 
 Deno.test('normalizeLatest: cobertura parcial (solo pm25) → resto null', () => {
-  const r = normalizeLatest(25, [
-    latest({ sensorsId: 1044, value: 30, utc: '2026-05-30T20:00:00Z' }),
-  ], CATALOG, NOW)
-  assertEquals(r.reading, { station_id: 25, measured_at: '2026-05-30T20:00:00Z', pm25: 30, pm10: null, o3: null })
+  const r = normalizeLatest(
+    25,
+    [
+      latest({ sensorsId: 1044, value: 30, utc: '2026-05-30T20:00:00Z' }),
+    ],
+    CATALOG,
+    NOW,
+  )
+  assertEquals(r.reading, {
+    station_id: 25,
+    measured_at: '2026-05-30T20:00:00Z',
+    pm25: 30,
+    pm10: null,
+    o3: null,
+  })
 })
 
 Deno.test('normalizeLatest: todos rancios → reading null', () => {
-  const r = normalizeLatest(25, [
-    latest({ sensorsId: 1044, value: 30, utc: '2020-01-01T00:00:00Z' }),
-    latest({ sensorsId: 1047, value: 60, utc: '2019-01-01T00:00:00Z' }),
-  ], CATALOG, NOW)
+  const r = normalizeLatest(
+    25,
+    [
+      latest({ sensorsId: 1044, value: 30, utc: '2020-01-01T00:00:00Z' }),
+      latest({ sensorsId: 1047, value: 60, utc: '2019-01-01T00:00:00Z' }),
+    ],
+    CATALOG,
+    NOW,
+  )
   assertEquals(r.reading, null)
   assertEquals(r.skippedStale, 2)
 })
 
 // --- cliente HTTP ---------------------------------------------------------
-Deno.test('fetchLocationLatest: parsea results', withFetch(
-  () => ({ body: { results: [{ sensorsId: 1044, value: 67, datetime: { utc: 'x' }, locationsId: 25 }] } }),
-  async () => {
-    const res = await fetchLocationLatest(25)
-    assertEquals(res.length, 1)
-    assertEquals(res[0].sensorsId, 1044)
-  },
-))
+Deno.test(
+  'fetchLocationLatest: parsea results',
+  withFetch(
+    () => ({
+      body: { results: [{ sensorsId: 1044, value: 67, datetime: { utc: 'x' }, locationsId: 25 }] },
+    }),
+    async () => {
+      const res = await fetchLocationLatest(25)
+      assertEquals(res.length, 1)
+      assertEquals(res[0].sensorsId, 1044)
+    },
+  ),
+)
 
-Deno.test('fetchLocations: pagina hasta recibir menos de 1000', withFetch(
-  (url) => {
-    const page = Number(new URL(url).searchParams.get('page'))
-    // página 1: 1000 resultados; página 2: 1 resultado → corta
-    const n = page === 1 ? 1000 : 1
-    const results = Array.from({ length: n }, (_, i) => ({ id: page * 1000 + i, sensors: [] }))
-    return { body: { results } }
-  },
-  async () => {
-    let count = 0
-    for await (const _ of fetchLocations()) count++
-    assertEquals(count, 1001)
-  },
-))
+Deno.test(
+  'fetchLocations: pagina hasta recibir menos de 1000',
+  withFetch(
+    (url) => {
+      const page = Number(new URL(url).searchParams.get('page'))
+      // página 1: 1000 resultados; página 2: 1 resultado → corta
+      const n = page === 1 ? 1000 : 1
+      const results = Array.from({ length: n }, (_, i) => ({ id: page * 1000 + i, sensors: [] }))
+      return { body: { results } }
+    },
+    async () => {
+      let count = 0
+      for await (const _ of fetchLocations()) count++
+      assertEquals(count, 1001)
+    },
+  ),
+)
 
-Deno.test('fetchJson: reintenta ante 429 y luego tiene éxito', withFetch(
-  (() => {
-    let calls = 0
-    return () => {
-      calls++
-      return calls === 1 ? { status: 429, body: {} } : { body: { results: [] } }
-    }
-  })(),
-  async () => {
-    const res = await fetchLocationLatest(25) // no lanza → el retry funcionó
-    assertEquals(res.length, 0)
-  },
-))
+Deno.test(
+  'fetchJson: reintenta ante 429 y luego tiene éxito',
+  withFetch(
+    (() => {
+      let calls = 0
+      return () => {
+        calls++
+        return calls === 1 ? { status: 429, body: {} } : { body: { results: [] } }
+      }
+    })(),
+    async () => {
+      const res = await fetchLocationLatest(25) // no lanza → el retry funcionó
+      assertEquals(res.length, 0)
+    },
+  ),
+)

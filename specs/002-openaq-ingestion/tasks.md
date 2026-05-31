@@ -12,7 +12,7 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **Organization**: Tareas agrupadas por historia de usuario. Las 3 historias comparten las Edge Functions, por eso el módulo compartido `_shared/openaq.ts` (con toda la lógica pura) vive en Foundational y bloquea a `seed-stations` y `ingest-openaq`.
 
-> **Estado de implementación (2026-05-30)**: todo el **código** está escrito (Deno + migraciones). Los pasos de **ops** que requieren `supabase login`/deploy/credenciales (T011, T013, T014, T017, T020, T021) quedan para el owner — documentados en `quickstart.md`. **Deno no está instalado en el entorno de desarrollo**, así que los tests (`_shared/openaq.test.ts`) están escritos pero NO ejecutados aquí; correr `deno task test` (o en CI). **Añadido fuera del plan original**: migración `0014_ingest_readings_fn.sql` — una función RPC para el upsert `COALESCE` (FR-006), porque `supabase-js .upsert()` sobrescribe NULLs y borraría valores parciales.
+> **Estado de implementación (2026-05-30)**: todo el **código** está escrito y **verificado con Deno 2.8.1**: `deno test` **11/11 en verde**, `deno check` (ambas funciones type-chequean con todo el árbol de `supabase-js`), `deno lint` y `deno fmt --check` limpios. Los pasos de **ops** que requieren `supabase login`/deploy/credenciales (T011, T013, T014, T017, T020, T021) quedan para el owner — documentados en `quickstart.md`. **Añadido fuera del plan original**: migración `0014_ingest_readings_fn.sql` — una función RPC para el upsert `COALESCE` (FR-006), porque `supabase-js .upsert()` sobrescribe NULLs y borraría valores parciales.
 
 ## Format: `[ID] [P?] [Story] Description`
 

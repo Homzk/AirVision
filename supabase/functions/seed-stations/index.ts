@@ -50,7 +50,11 @@ Deno.serve(async () => {
 
     return Response.json({
       ok: true,
-      summary: { duration_ms: Date.now() - start, stations_received: rows.length, stations_upserted: upserted },
+      summary: {
+        duration_ms: Date.now() - start,
+        stations_received: rows.length,
+        stations_upserted: upserted,
+      },
     })
   } catch (e) {
     return Response.json(
