@@ -10,7 +10,7 @@
 
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
-import { BBOX_CHILE, fetchLocations } from '../_shared/openaq.ts'
+import { BBOX_CHILE, errMsg, fetchLocations } from '../_shared/openaq.ts'
 
 Deno.serve(async () => {
   const start = Date.now()
@@ -57,9 +57,6 @@ Deno.serve(async () => {
       },
     })
   } catch (e) {
-    return Response.json(
-      { ok: false, error: e instanceof Error ? e.message : String(e) },
-      { status: 500 },
-    )
+    return Response.json({ ok: false, error: errMsg(e) }, { status: 500 })
   }
 })

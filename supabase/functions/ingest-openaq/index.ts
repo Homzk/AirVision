@@ -14,6 +14,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 import {
   BBOX_CHILE,
+  errMsg,
   fetchLocationLatest,
   fetchLocations,
   isStale,
@@ -74,7 +75,7 @@ Deno.serve(async () => {
         summary.skipped_invalid += skippedInvalid
         if (reading) rows.push(reading)
       } catch (e) {
-        summary.errors.push(`${id}: ${e instanceof Error ? e.message : String(e)}`)
+        summary.errors.push(`${id}: ${errMsg(e)}`)
       }
       summary.stations_polled++
       await sleep(THROTTLE_MS)
@@ -87,7 +88,7 @@ Deno.serve(async () => {
       summary.rows_upserted = typeof data === 'number' ? data : rows.length
     }
   } catch (e) {
-    summary.errors.push(e instanceof Error ? e.message : String(e))
+    summary.errors.push(errMsg(e))
   }
 
   summary.duration_ms = Date.now() - start

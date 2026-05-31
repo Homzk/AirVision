@@ -56,6 +56,19 @@ export interface NormalizeResult {
 
 export const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
+/** Serializa cualquier throw a string legible (los errores de supabase-js son objetos planos). */
+export function errMsg(e: unknown): string {
+  if (e instanceof Error) return e.message
+  if (e && typeof e === 'object') {
+    try {
+      return JSON.stringify(e)
+    } catch {
+      return String(e)
+    }
+  }
+  return String(e)
+}
+
 function apiKey(): string {
   return Deno.env.get('OPENAQ_API_KEY') ?? ''
 }
