@@ -33,33 +33,51 @@ jobs:
   e2e:
     name: E2E (Playwright)
     runs-on: ubuntu-latest
+    # Secrets del repo. service_role es server-side: solo lo usa el runner
+    # (helpers de setup/teardown), nunca el bundle del navegador.
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
+      # Hasta que se carguen los GitHub Secrets (T016), el job se salta en vez de
+      # fallar: queda en verde con un aviso. Con los secrets presentes, corre.
+      - name: Check secrets
+        id: secrets
+        run: |
+          if [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=E2E omitido::Faltan los GitHub Secrets (T016: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY). El job se salta hasta que se carguen."
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ready == 'true'
 
       - name: Setup Node
+        if: steps.secrets.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
       - name: Install dependencies
+        if: steps.secrets.outputs.ready == 'true'
         run: npm ci
 
       - name: Install Playwright browser
+        if: steps.secrets.outputs.ready == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
+        if: steps.secrets.outputs.ready == 'true'
         run: npm run test:e2e
         env:
           CI: 'true'
-          # Secrets del repo. service_role es server-side: solo lo usa el runner
-          # (helpers de setup/teardown), nunca el bundle del navegador.
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Upload Playwright report
-        if: always()
+        if: ${{ always() && steps.secrets.outputs.ready == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report

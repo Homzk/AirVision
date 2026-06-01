@@ -103,7 +103,7 @@ description: 'Task list for AirVision feature 003 — Suite de Tests End-to-End 
 **Independent Test**: abrir un PR con la suite integrada → el job `e2e` corre `playwright test`; romper un flujo a propósito → el check se pone en rojo y bloquea la fusión.
 
 - [x] T015 [US5] Añadir un job `e2e` a `.github/workflows/ci.yml` (separado de `quality`): `actions/setup-node@20`, `npm ci`, `npx playwright install --with-deps chromium` (con caché), `npm run build`, `npm run test:e2e`; env desde GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`); subir `playwright-report/` y `test-results/` con `actions/upload-artifact` (`if: always()`)
-- [ ] T016 [US5] **(PENDIENTE — ops del owner)** Cargar los 3 GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) en Settings → Secrets and variables → Actions, y marcar el check `e2e` como **requerido** para merge a `main` (Settings → Branches / Rulesets). Sin esto, el job `e2e` fallará en CI por falta de credenciales.
+- [ ] T016 [US5] **(PENDIENTE — ops del owner)** Cargar los 3 GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) en Settings → Secrets and variables → Actions, y marcar el check `e2e` como **requerido** para merge a `main` (Settings → Branches / Rulesets). Hasta que se carguen, el job `e2e` se **salta en verde** (paso "Check secrets" con aviso), no falla.
 
 **Checkpoint**: las regresiones de cualquier flujo cubierto se detectan automáticamente y bloquean el merge.
 

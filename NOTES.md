@@ -20,8 +20,8 @@ USAGE en `readings_id_seq` + DELETE en `readings`, para inyectar/limpiar la lect
 US4 — completa parte de la deuda #1). Job `e2e` añadido a `ci.yml`.
 **PENDIENTE (ops del owner, T016)**: cargar los 3 GitHub Secrets (`VITE_SUPABASE_URL`,
 `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) y marcar el check `e2e` como
-requerido para `main`; hasta entonces el job `e2e` fallará en CI por falta de
-credenciales. **El service_role del cloud se guardó en `.env.local`** (antes era un
+requerido para `main`; hasta entonces el job `e2e` se **salta en verde** (paso
+"Check secrets" con aviso), no falla. **El service_role del cloud se guardó en `.env.local`** (antes era un
 placeholder); necesario para correr la suite en local.
 
 **Estado en vivo** (https://air-vision-xi.vercel.app/): **169 estaciones reales** de
