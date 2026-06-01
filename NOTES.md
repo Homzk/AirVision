@@ -5,14 +5,16 @@
 
 ## ▶ PRÓXIMA SESIÓN (retomar aquí)
 
-**Feature 002 (ingesta real OpenAQ) COMPLETA** — el cron `*/15` ya está agendado
-(migración `0016_schedule_ingest_cron.sql`, aplicada con `supabase db push`). Solo
-queda la **verificación en vivo del cron (T021)**: esperar un ciclo (>15 min) y
-confirmar que `select max(measured_at) from readings;` avanza solo, y revisar los
-logs de la función en el dashboard (la línea `{"event":"ingest-openaq",...}` del
-summary, T020). Queries útiles para el cron en Studio SQL Editor:
-`select jobname, schedule, active from cron.job;` y
+**Feature 002 (ingesta real OpenAQ) COMPLETA Y VERIFICADA** — el cron `*/15` está
+agendado (migración `0016_schedule_ingest_cron.sql`) y **confirmado disparando solo
+en vivo (2026-06-01 19:16 UTC)**: `max(measured_at)` avanzó de `18:00` a `19:00` sin
+invocación manual, justo tras el tick de las 19:15. T021 cerrado. Queries útiles para
+el cron en Studio SQL Editor: `select jobname, schedule, active from cron.job;` y
 `select status, start_time from cron.job_run_details order by start_time desc limit 3;`.
+
+**Próximo trabajo: feature 003 (tests E2E con Playwright)** — spec y plan ya creados
+en `specs/003-e2e-playwright-tests/` (spec commiteada; plan pendiente de commit).
+Siguiente comando: `/speckit-tasks`.
 
 **Estado en vivo** (https://air-vision-xi.vercel.app/): **169 estaciones reales** de
 Chile cargadas; el cron `*/15` ya repone los `readings` solo (verificación 2026-06-01:
