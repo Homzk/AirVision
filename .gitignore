@@ -41,6 +41,12 @@ coverage
 *.lcov
 .nyc_output
 
+# Playwright (E2E)
+playwright-report
+test-results
+e2e/.auth
+.playwright
+
 # Env files (constitution III — secret hygiene)
 .env
 .env.*

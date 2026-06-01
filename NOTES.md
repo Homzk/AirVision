@@ -12,9 +12,17 @@ invocación manual, justo tras el tick de las 19:15. T021 cerrado. Queries útil
 el cron en Studio SQL Editor: `select jobname, schedule, active from cron.job;` y
 `select status, start_time from cron.job_run_details order by start_time desc limit 3;`.
 
-**Próximo trabajo: feature 003 (tests E2E con Playwright)** — spec y plan ya creados
-en `specs/003-e2e-playwright-tests/` (spec commiteada; plan pendiente de commit).
-Siguiente comando: `/speckit-tasks`.
+**Feature 003 (tests E2E con Playwright) IMPLEMENTADA** — suite en `e2e/` con 4 specs
+(map/auth/favorites/alerts) + helpers (`service_role` solo en el runner). **7/7 verde
+en local** (~44 s; estable en `--repeat-each=3` = 21/21), **huella cero verificada**
+(0 usuarios `@airvision.test` residuales). Migración `0018` añadida (grant `service_role`
+USAGE en `readings_id_seq` + DELETE en `readings`, para inyectar/limpiar la lectura de
+US4 — completa parte de la deuda #1). Job `e2e` añadido a `ci.yml`.
+**PENDIENTE (ops del owner, T016)**: cargar los 3 GitHub Secrets (`VITE_SUPABASE_URL`,
+`VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) y marcar el check `e2e` como
+requerido para `main`; hasta entonces el job `e2e` fallará en CI por falta de
+credenciales. **El service_role del cloud se guardó en `.env.local`** (antes era un
+placeholder); necesario para correr la suite en local.
 
 **Estado en vivo** (https://air-vision-xi.vercel.app/): **169 estaciones reales** de
 Chile cargadas; el cron `*/15` ya repone los `readings` solo (verificación 2026-06-01:

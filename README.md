@@ -170,7 +170,11 @@ La disciplina de testing es un principio de la constitución del proyecto: tests
 npm run test           # Vitest en modo watch
 npm run test:run       # corre una vez y sale
 npm run test:coverage  # corre con reporte de cobertura
+npm run test:e2e       # suite end-to-end con Playwright (build + preview + Chromium)
+npm run test:e2e:ui    # Playwright en modo UI interactivo (debug)
 ```
+
+**Tests end-to-end (Playwright, feature 003):** una suite en `e2e/` ejercita la app real en un navegador contra el Supabase desplegado, cubriendo los cuatro flujos (mapa público, registro/login, favoritos, alertas). Los flujos autenticados usan cuentas efímeras creadas vía la API admin y limpiadas al terminar; el disparo de alertas se provoca inyectando una lectura con `service_role` **fuera del navegador**. Requiere `SUPABASE_SERVICE_ROLE_KEY` en `.env.local` (solo para el runner). Corre también en CI (job `e2e`) como gate de cada push/PR. Diseño en [`specs/003-e2e-playwright-tests/`](specs/003-e2e-playwright-tests/).
 
 **Métricas actuales:**
 
@@ -178,7 +182,7 @@ npm run test:coverage  # corre con reporte de cobertura
 - 📊 **97.25% de cobertura de líneas** · **90.36% de ramas**
 - 🎯 Umbral mínimo (_gate_) configurado: **70% líneas / 65% ramas** sobre `src/hooks/`, `src/utils/`, `src/stores/` y `src/lib/`
 
-Los tests cubren la lógica pura (clasificación de niveles contra umbrales OMS, formateo de fechas), los stores de Zustand (transiciones de estado), los hooks con Supabase mockeado (`vi.mock()`, sin red real) y los componentes de formulario y visualización. Tests E2E con Playwright están fuera del alcance del MVP por decisión de la constitución.
+Los tests cubren la lógica pura (clasificación de niveles contra umbrales OMS, formateo de fechas), los stores de Zustand (transiciones de estado), los hooks con Supabase mockeado (`vi.mock()`, sin red real) y los componentes de formulario y visualización. Los tests E2E con Playwright (diferidos del MVP por la constitución) se añadieron como feature post-MVP (003) y cubren los flujos completos en navegador (ver arriba).
 
 ## Spec-Driven Development
 
