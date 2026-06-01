@@ -157,10 +157,13 @@ No es un bug. Las dos vistas leen `readings` con criterios distintos:
   reciente es más vieja que el rango, no hay puntos que graficar.
 
 Es decir: el mapa puede verse "vivo" mientras la ingesta está detenida y
-los datos envejecieron fuera de la ventana de 24 h. En prod esto **no es
-hipotético**: no hay ingesta automática (deuda #6 en `NOTES.md`, verificada
-2026-05-30 — cero Edge Functions desplegadas), así que los `readings` solo
-se reponen re-sembrando `seed.sql` a mano.
+los datos envejecieron fuera de la ventana de 24 h. **En prod esto ya no es
+el estado estacionario** (feature 002, 2026-06-01): la Edge Function
+`ingest-openaq` corre con un cron `*/15 * * * *` (migración
+`0016_schedule_ingest_cron.sql`) que repone los `readings` reales de OpenAQ
+sola, así que la antigüedad se mantiene baja sin re-sembrar a mano. El
+escenario sigue siendo posible solo de forma transitoria —si el cron se
+pausa o un ciclo falla— y un ciclo posterior lo recupera.
 
 **Cómo verificarlo**: en Supabase Studio, abrir la tabla `readings`,
 ordenar por `measured_at` descendente y mirar el timestamp más reciente.

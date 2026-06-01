@@ -160,7 +160,7 @@ supabase db push
 npm run dev          # Vite en http://localhost:5173
 ```
 
-> Solo dos variables de entorno son obligatorias para correr la app: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Las de OpenAQ están diferidas (ver [Roadmap](#roadmap)).
+> Solo dos variables de entorno son obligatorias para correr el **frontend**: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. La `OPENAQ_API_KEY` y el `SUPABASE_SERVICE_ROLE_KEY` son **server-side** (solo para las Edge Functions de ingesta, ver [feature 002](specs/002-openaq-ingestion/)); nunca llegan al cliente.
 
 ## Tests
 
@@ -201,9 +201,10 @@ El proyecto se rige además por una **constitución** ([`.specify/memory/constit
 
 **Phase 8 (Polish) — ✅ completada:** verificación responsive a 360px, `ReconnectingIndicator` de estado Realtime en el header, **deploy a Vercel en vivo** con variables de entorno configuradas, README + screenshots, y los siete Quality Gates de la constitución en verde.
 
-**Diferido — feature 002 (post-MVP):**
+**Feature 002 — Ingesta real desde OpenAQ v3 — ✅ completada:** la app corre con **datos reales** de la red chilena (SINCA vía OpenAQ v3), no con seed sintético. Dos Edge Functions (Deno) del lado del servidor: `seed-stations` pobló el catálogo con **~169 estaciones reales** de Chile, e `ingest-openaq` ingiere mediciones (PM2.5/PM10/O₃) con upsert idempotente `COALESCE`, descarte de lecturas rancias (regla _R-fresh_, ≤3 h por contaminante) e inválidas. Corre **automáticamente cada 15 min** con un cron `pg_cron` + `pg_net` (`*/15 * * * *`); el frontend nunca toca OpenAQ (Constitución, Principio II). Diseño completo en [`specs/002-openaq-ingestion/`](specs/002-openaq-ingestion/).
 
-- **Ingesta real desde OpenAQ v3.** Hoy la app corre con un seed sintético de 12 estaciones de Chile. La arquitectura ya contempla la ingesta (Edge Functions `seed-stations` e `ingest-openaq` programadas cada 15 min con `ON CONFLICT DO UPDATE`), que se conectará sin tocar el frontend cuando se disponga de una `OPENAQ_API_KEY`.
+**Diferido (post-MVP):**
+
 - Tests E2E con Playwright (register/login, navegación del mapa, favoritos, alertas).
 
 ## Licencia

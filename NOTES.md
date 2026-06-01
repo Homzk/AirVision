@@ -1,26 +1,29 @@
 # AirVision — Session notes
 
-**Última actualización**: 2026-05-30
+**Última actualización**: 2026-06-01
 **Branch**: `main` (todos los commits empujados a `origin/main`)
 
 ## ▶ PRÓXIMA SESIÓN (retomar aquí)
 
-**Feature 002 (ingesta real OpenAQ) está VIVA** — falta solo el último paso:
-
-1. **Agendar el cron `*/15`** (T013): pegar en Studio SQL Editor el `pg_cron` +
-   `pg_net` de `quickstart.md §6` → `cron.schedule('ingest-openaq-15min', '*/15 * * * *', ...)`
-   con `net.http_post` a `.../functions/v1/ingest-openaq` y header `Authorization: Bearer <anon>`.
-   Verificar: `select jobname, schedule, active from cron.job;` y luego
-   `select status, start_time from cron.job_run_details order by start_time desc limit 3;`.
-2. **Tras confirmar el cron**: T018/T019 — mover "Ingesta real OpenAQ" de _Diferido_
-   a hecho en el Roadmap del `README.md` y cerrar la deuda #6 (ya no aplica).
+**Feature 002 (ingesta real OpenAQ) COMPLETA** — el cron `*/15` ya está agendado
+(migración `0016_schedule_ingest_cron.sql`, aplicada con `supabase db push`). Solo
+queda la **verificación en vivo del cron (T021)**: esperar un ciclo (>15 min) y
+confirmar que `select max(measured_at) from readings;` avanza solo, y revisar los
+logs de la función en el dashboard (la línea `{"event":"ingest-openaq",...}` del
+summary, T020). Queries útiles para el cron en Studio SQL Editor:
+`select jobname, schedule, active from cron.job;` y
+`select status, start_time from cron.job_run_details order by start_time desc limit 3;`.
 
 **Estado en vivo** (https://air-vision-xi.vercel.app/): **169 estaciones reales** de
-Chile cargadas, **107 readings reales** ingestadas (1ª corrida manual; el cron las
-refresca solo cuando se agende). Secrets ya en Supabase: `OPENAQ_API_KEY`,
-`INGEST_THROTTLE_MS=500`. Las 3 migraciones (0013 limpieza seed, 0014 RPC, 0015 grants)
-aplicadas. `deno test` 11/11. Helper de invocación: `bash scripts/invoke-function.sh <fn>`
-(la CLI no tiene `functions invoke` → se llaman por HTTP).
+Chile cargadas; el cron `*/15` ya repone los `readings` solo (verificación 2026-06-01:
+`rows_upserted: 102`, `max(measured_at)` avanzó a `2026-06-01T17:00`). Secrets en
+Supabase: `OPENAQ_API_KEY`, `INGEST_THROTTLE_MS=350` (bajado de 500: con ~107
+estaciones frescas, 500 ms excedía el wall-clock de la función y el batch upsert nunca
+corría). Las 5 migraciones de la ingesta (0013 limpieza seed, 0014 RPC, 0015 grants,
+**0016 cron**, **0017 timeout pg_net 180 s**) aplicadas. `deno test` 11/11. Helper de invocación:
+`bash scripts/invoke-function.sh <fn>` (la CLI no tiene `functions invoke` → HTTP; ojo:
+una invocación síncrona da 504 a los ~150 s por el wall-clock del gateway, pero el cron
+usa `pg_net` async y la función corre hasta completarse).
 
 ## Estado actual
 
@@ -56,8 +59,9 @@ Estas decisiones quedaron grabadas en `specs/001-air-quality-dashboard/spec.md` 
 - **Supabase Cloud** (sin Docker local) — todas las migraciones se aplican con `supabase db push` contra la BD remota.
 - **Tipos generados con `supabase gen types typescript --linked`** y pipeados por `Out-File -Encoding utf8` para evitar el bug de UTF-16 de PowerShell 5.1 (ver memoria `feedback-pwsh-utf8-redirect`).
 - **Datos sintéticos en `supabase/seed.sql`**: 12 estaciones de Chile (Santiago x4, Valparaíso, Concepción, Rancagua, Talca, Chillán, Temuco, Coyhaique, Puente Alto) + 24 lecturas horarias por estación con bases variadas para mostrar toda la paleta de niveles. El seed es idempotente (`ON CONFLICT DO NOTHING`).
-- **Ingesta OpenAQ IMPLEMENTADA (feature 002, 2026-05-30)**: `supabase/functions/_shared/openaq.ts` + `seed-stations` + `ingest-openaq` desplegadas y verificadas en vivo. El seed sintético (`seed.sql`) quedó obsoleto: la migración `0013` borró las estaciones 1–13 y ahora hay 169 estaciones reales de Chile (SINCA). Detalle en `specs/002-openaq-ingestion/`. Falta solo agendar el cron (ver "Próxima sesión").
+- **Ingesta OpenAQ COMPLETA (feature 002, cron en vivo 2026-06-01)**: `supabase/functions/_shared/openaq.ts` + `seed-stations` + `ingest-openaq` desplegadas y verificadas en vivo; el cron `*/15` (migraciones `0016`/`0017`) repone los `readings` solo. El seed sintético (`seed.sql`) quedó obsoleto: la migración `0013` borró las estaciones 1–13 y ahora hay 169 estaciones reales de Chile (SINCA). Detalle en `specs/002-openaq-ingestion/`.
   - **IDs de parámetro OpenAQ v3**: pm10=1, pm25=2, o3=3 (variante µg/m³ mass; O₃ también existe como ppm=10/ppb=32 — NO usar). Mediciones por `/locations/{id}/latest` (NO existe `/measurements?bbox`). Regla **R-fresh**: descartar lecturas >3h por-contaminante (sensores muertos devuelven valores de años atrás en `/latest`).
+  - **Drift del catálogo OpenAQ (bug encontrado en la verificación T021)**: OpenAQ agrega estaciones entre corridas de `seed-stations`. `ingest-openaq` armaba su lista de polling desde el barrido `/locations` en vivo, así que intentaba escribir readings de estaciones aún no presentes en `stations` → FK violation `readings_station_id_fkey` que, al ser el upsert un batch único en el RPC `ingest_readings`, abortaba TODO el ciclo (`rows_upserted: 0`, silencioso). **Fix**: `ingest-openaq` ahora filtra `freshStationIds` contra `SELECT id FROM stations`. Las estaciones nuevas entran al re-ejecutar `seed-stations`.
 
 ## Deuda técnica conocida
 
@@ -71,7 +75,7 @@ Estas decisiones quedaron grabadas en `specs/001-air-quality-dashboard/spec.md` 
 
 5. **`useStationReadings` doble suscripción Realtime** — `MapView` mantiene un canal `readings:inserts` global (todas las estaciones) y `useStationReadings` abre un segundo canal `readings:station:${id}` filtrado al abrir el panel. Es redundante pero correcto. Refactor a un solo canal con dispatch interno queda en backlog.
 
-6. ~~**No hay ingesta automática en prod**~~ **RESUELTO (feature 002)** — las Edge Functions `seed-stations` e `ingest-openaq` están desplegadas y funcionando; la 1ª corrida manual escribió 107 readings reales. **Solo queda agendar el cron `*/15`** (ver "Próxima sesión") para que el refresco sea automático; hasta entonces hay que invocar `ingest-openaq` a mano. Una vez agendado el cron, el escenario T109 de datos rancios deja de ser el estado estacionario en prod.
+6. ~~**No hay ingesta automática en prod**~~ **RESUELTO Y CERRADO (feature 002, cron en vivo 2026-06-01)** — las Edge Functions `seed-stations` e `ingest-openaq` están desplegadas y funcionando, y el cron `*/15 * * * *` ya está agendado vía la migración `0016_schedule_ingest_cron.sql` (`pg_cron` + `pg_net` → `net.http_post` a la URL de la función con header `Authorization: Bearer <anon>`). La ingesta ahora se refresca sola; el escenario T109 de datos rancios dejó de ser el estado estacionario en prod (solo posible de forma transitoria si el cron se pausa o un ciclo falla).
 
 ## Aprendizajes del deploy (T111)
 

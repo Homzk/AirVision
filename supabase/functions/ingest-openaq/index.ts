@@ -48,13 +48,26 @@ Deno.serve(async () => {
   }
 
   try {
+    // 0. Catálogo conocido: solo ingestamos lecturas de estaciones que ya
+    //    existen en `stations` (sembradas por seed-stations). OpenAQ agrega
+    //    estaciones nuevas entre corridas de seed; sus readings violarían el FK
+    //    `readings_station_id_fkey` y —como el upsert es un batch único— harían
+    //    rollback de TODO el ciclo (rows_upserted=0). Las nuevas se incorporan
+    //    cuando se re-ejecute seed-stations.
+    const { data: known, error: knownErr } = await supabase.from('stations').select('id')
+    if (knownErr) throw knownErr
+    const knownIds = new Set<number>((known ?? []).map((r) => r.id as number))
+
     // 1. Un barrido de /locations da (a) el catálogo global sensorsId→pollutant
     //    —que /latest no incluye— y (b) la lista de estaciones frescas.
     const sensorCatalog = new Map<number, Pollutant>()
     const freshStationIds: number[] = []
     for await (const loc of fetchLocations(BBOX_CHILE)) {
       for (const [sid, p] of sensorCatalogOf(loc)) sensorCatalog.set(sid, p)
-      if (loc.datetimeLast && !isStale(loc.datetimeLast.utc, now, MAX_AGE_HOURS)) {
+      if (
+        loc.datetimeLast && !isStale(loc.datetimeLast.utc, now, MAX_AGE_HOURS) &&
+        knownIds.has(loc.id)
+      ) {
         freshStationIds.push(loc.id)
       }
     }
@@ -92,6 +105,9 @@ Deno.serve(async () => {
   }
 
   summary.duration_ms = Date.now() - start
+  // Observabilidad (FR-010): el cron invoca por pg_net y nadie lee el body de
+  // la respuesta, así que el summary debe quedar en los logs de la función.
+  console.log(JSON.stringify({ event: 'ingest-openaq', ...summary }))
   // Siempre 200: el cron del próximo ciclo recupera cualquier ventana perdida.
   return Response.json({ ok: summary.errors.length === 0, summary })
 })

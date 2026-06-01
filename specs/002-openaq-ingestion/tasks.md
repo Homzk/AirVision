@@ -12,7 +12,7 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **Organization**: Tareas agrupadas por historia de usuario. Las 3 historias comparten las Edge Functions, por eso el módulo compartido `_shared/openaq.ts` (con toda la lógica pura) vive en Foundational y bloquea a `seed-stations` y `ingest-openaq`.
 
-> **Estado de implementación (2026-05-30)**: todo el **código** está escrito y **verificado con Deno 2.8.1**: `deno test` **11/11 en verde**, `deno check` (ambas funciones type-chequean con todo el árbol de `supabase-js`), `deno lint` y `deno fmt --check` limpios. Los pasos de **ops** que requieren `supabase login`/deploy/credenciales (T011, T013, T014, T017, T020, T021) quedan para el owner — documentados en `quickstart.md`. **Añadido fuera del plan original**: migración `0014_ingest_readings_fn.sql` — una función RPC para el upsert `COALESCE` (FR-006), porque `supabase-js .upsert()` sobrescribe NULLs y borraría valores parciales.
+> **Estado de implementación (2026-06-01)**: **FEATURE COMPLETA — 21/21 tareas**. Todo el **código** está escrito y **verificado con Deno 2.8.1**: `deno test` **11/11 en verde**, `deno check` (ambas funciones type-chequean con todo el árbol de `supabase-js`), `deno fmt --check` limpio. El cron `*/15` está **agendado y verificado en vivo** (migraciones `0016`/`0017`); `ingest-openaq` escribió 102 readings reales en la corrida de verificación. **Añadidos fuera del plan original**: (1) migración `0014_ingest_readings_fn.sql` — RPC para el upsert `COALESCE` (FR-006), porque `supabase-js .upsert()` sobrescribe NULLs y borraría valores parciales; (2) migración `0016_schedule_ingest_cron.sql` + `0017_cron_http_timeout.sql` — el cron vía `pg_cron`+`pg_net` (T013); (3) **fix de drift de catálogo**: `ingest-openaq` filtra las estaciones a las presentes en `stations` para evitar que estaciones nuevas de OpenAQ aborten el batch upsert por FK violation; (4) `console.log` del summary para observabilidad del cron (T020).
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -69,7 +69,7 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 **Independent Test**: invocar `ingest-openaq` y ver `readings` nuevas; esperar un ciclo del cron y confirmar que `max(measured_at)` avanza solo; con el mapa abierto, los marcadores se repintan en vivo.
 
 - [x] T012 [US2] Implementar la Edge Function `ingest-openaq` en `supabase/functions/ingest-openaq/index.ts`: cargar los `station_id` (SELECT de `stations`) → por cada uno `fetchLocationLatest(id)` con throttling (<60 req/min) → `normalizeLatest` → upsert batch a `readings` `ON CONFLICT (station_id, measured_at) DO UPDATE COALESCE` con `service_role` → responder `{ ok, summary }`. Siempre 200 aunque OpenAQ falle
-- [ ] T013 [US2] Agendar el cron `*/15 * * * *` para `ingest-openaq` en Supabase Cloud (dashboard → Schedules, o `pg_cron` + `pg_net`); `seed-stations` NO se agenda — paso de ops documentado en quickstart §6
+- [x] T013 [US2] Agendar el cron `*/15 * * * *` para `ingest-openaq` en Supabase Cloud (dashboard → Schedules, o `pg_cron` + `pg_net`); `seed-stations` NO se agenda — paso de ops documentado en quickstart §6 — **HECHO** vía migración `0016_schedule_ingest_cron.sql` (`pg_cron`+`pg_net`), aplicada con `supabase db push` el 2026-06-01
 - [x] T014 [US2] Verificación (quickstart §4, §7): invocar `ingest-openaq` (summary con `rows_upserted>0`), esperar >15 min y confirmar que entran lecturas solas, y que el marcador se actualiza en vivo sin recargar
 
 **Checkpoint**: datos reales fluyen automáticamente; resuelve la deuda #6 (US1 + US2 operativas).
@@ -94,10 +94,10 @@ description: 'Task list for AirVision feature 002 — Ingesta real de calidad de
 
 **Purpose**: cerrar deuda, documentación y validación end-to-end.
 
-- [ ] T018 [P] Resolver la deuda #6 en `NOTES.md` (ya hay ingesta automática) y mover la "Ingesta real desde OpenAQ" del bloque _Diferido_ al estado hecho en el Roadmap de `README.md`, una vez el cron esté en vivo
-- [ ] T019 [P] Actualizar `specs/001-air-quality-dashboard/quickstart.md`: el escenario de datos rancios deja de ser el estado estacionario en prod (ahora se repone solo)
-- [ ] T020 Confirmar observabilidad (FR-010): el `summary { rows_upserted, skipped_stale, skipped_invalid, errors, duration_ms }` queda en los logs de la función
-- [ ] T021 Ejecutar la validación end-to-end de `quickstart.md` (7 pasos) y confirmar SC-001…SC-006
+- [x] T018 [P] Resolver la deuda #6 en `NOTES.md` (ya hay ingesta automática) y mover la "Ingesta real desde OpenAQ" del bloque _Diferido_ al estado hecho en el Roadmap de `README.md`, una vez el cron esté en vivo
+- [x] T019 [P] Actualizar `specs/001-air-quality-dashboard/quickstart.md`: el escenario de datos rancios deja de ser el estado estacionario en prod (ahora se repone solo)
+- [x] T020 Confirmar observabilidad (FR-010): el `summary { rows_upserted, skipped_stale, skipped_invalid, errors, duration_ms }` queda en los logs de la función — `console.log(JSON.stringify({event:'ingest-openaq', ...summary}))` añadido y redeployado (necesario porque el cron invoca por `pg_net` y nadie lee el body)
+- [x] T021 Ejecutar la validación end-to-end de `quickstart.md` (7 pasos) y confirmar SC-001…SC-006 — **VERIFICADO 2026-06-01**: invoke real escribió `rows_upserted: 102`, `skipped_stale: 52`; `max(measured_at)` avanzó de `2026-05-31T02:00` a `2026-06-01T17:00`. **Bug encontrado y corregido**: la drift del catálogo de OpenAQ (estaciones nuevas no presentes en `stations`) provocaba un FK violation que abortaba el batch entero (`rows_upserted: 0`); `ingest-openaq` ahora filtra `freshStationIds` contra la tabla `stations`. Throttle bajado a 350 ms (500 ms excedía el wall-clock con ~107 estaciones frescas).
 
 ---
 
