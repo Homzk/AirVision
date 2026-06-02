@@ -209,7 +209,9 @@ El proyecto se rige además por una **constitución** ([`.specify/memory/constit
 
 **Feature 003 — Suite de tests E2E con Playwright — ✅ completada:** una suite end-to-end en `e2e/` ejercita la app real en Chromium contra el Supabase desplegado, cubriendo los cuatro flujos (mapa público, registro/login, favoritos, alertas). Los flujos autenticados usan cuentas efímeras creadas vía la API admin (limpiadas al terminar) y el disparo de alertas se provoca inyectando una lectura con `service_role` **fuera del navegador**. Corre en CI (job `e2e`) como **gate requerido** de cada push/PR sobre `main`, junto al job `quality` (lint, typecheck, tests). Diseño completo en [`specs/003-e2e-playwright-tests/`](specs/003-e2e-playwright-tests/).
 
-Con la feature 003 cerrada, **todas las features planificadas** —incluido el único ítem que quedaba diferido del MVP (los tests E2E)— están implementadas, probadas y en `main`.
+**Feature 004 — Búsqueda y filtrado de estaciones en el mapa — ✅ completada:** mejora del descubrimiento en el mapa, 100% en el cliente sobre las estaciones ya cargadas (sin cambios de base de datos). Incluye un buscador accesible por nombre/comuna que centra el mapa en la estación elegida, un toggle para ocultar/mostrar las estaciones sin datos recientes con un contador "X de Y", chips de filtro por nivel de calidad (worst-of), clustering de marcadores con [Supercluster](https://github.com/mapbox/supercluster) para legibilidad al alejar el zoom, y "estaciones cerca de mí" por geolocalización del navegador. La lógica de filtrado/búsqueda/cercanía es pura y cubierta con tests; añade un spec E2E de descubrimiento. Diseño completo en [`specs/004-station-search-filters/`](specs/004-station-search-filters/).
+
+Con las features 001–004 cerradas, el descubrimiento, la visualización, la ingesta y las pruebas del producto están implementados, probados y en `main`.
 
 ## Licencia
 

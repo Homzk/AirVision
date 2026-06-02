@@ -19,6 +19,7 @@ vi.mock('react-leaflet', () => ({
       data-color={pathOptions?.fillColor}
       data-center={JSON.stringify(center)}
       data-radius={radius}
+      data-fill-opacity={pathOptions?.fillOpacity}
       onClick={() => eventHandlers?.click?.()}
     >
       {children}
@@ -43,16 +44,25 @@ function mkStation(latest: StationWithLatest['latest'] = null): StationWithLates
 }
 
 describe('StationMarker', () => {
-  it('renders the marker at the station coordinates', () => {
-    render(<StationMarker station={mkStation()} onSelect={() => {}} />)
+  it('renders the marker at the station coordinates with full radius when it has data', () => {
+    const station = mkStation({
+      measured_at: '2026-05-19T12:00:00Z',
+      pm25: 10,
+      pm10: null,
+      o3: null,
+    })
+    render(<StationMarker station={station} onSelect={() => {}} />)
     const marker = screen.getByTestId('circle-marker')
     expect(marker.dataset.center).toBe('[-33.5,-70.6]')
     expect(marker.dataset.radius).toBe('10')
   })
 
-  it('uses the no_data color when latest is null', () => {
+  it('de-emphasises no-data stations: grey, smaller and more transparent', () => {
     render(<StationMarker station={mkStation()} onSelect={() => {}} />)
-    expect(screen.getByTestId('circle-marker').dataset.color).toBe('#9ca3af')
+    const marker = screen.getByTestId('circle-marker')
+    expect(marker.dataset.color).toBe('#9ca3af')
+    expect(marker.dataset.radius).toBe('6')
+    expect(marker.dataset.fillOpacity).toBe('0.45')
   })
 
   it('uses the worst-of color when readings are present', () => {
