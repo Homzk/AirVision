@@ -27,7 +27,13 @@ vi.mock('@/hooks/useReadingsRealtime', () => ({
   useReadingsRealtime: () => ({ status: 'CONNECTED' }),
 }))
 
-function makeStation(id: number, name: string, lat: number, lng: number): StationWithLatest {
+function makeStation(
+  id: number,
+  name: string,
+  lat: number,
+  lng: number,
+  withData: boolean,
+): StationWithLatest {
   return {
     id,
     name,
@@ -36,13 +42,16 @@ function makeStation(id: number, name: string, lat: number, lng: number): Statio
     longitude: lng,
     country_code: 'CL',
     created_at: '2026-01-01T00:00:00Z',
-    latest: null,
+    latest: withData
+      ? { measured_at: '2026-06-02T12:00:00Z', pm25: 10, pm10: null, o3: null }
+      : null,
   }
 }
 
 const stations = [
-  makeStation(1, 'Tocopilla', -22.09, -70.2),
-  makeStation(2, 'Las Condes', -33.41, -70.57),
+  makeStation(1, 'Tocopilla', -22.09, -70.2, true),
+  makeStation(2, 'Las Condes', -33.41, -70.57, true),
+  makeStation(3, 'Puerto Montt', -41.47, -72.94, false), // sin datos recientes
 ]
 
 beforeEach(() => {
@@ -52,10 +61,20 @@ beforeEach(() => {
 })
 
 describe('MapView', () => {
-  it('renders the search combobox and one marker per station', async () => {
+  it('renders the search combobox and hides no-data stations by default', async () => {
     render(<MapView stations={stations} />)
 
     expect(screen.getByRole('combobox', { name: /buscar estación o comuna/i })).toBeInTheDocument()
+    // Default showNoData=false: only the two stations with data render.
     expect(await screen.findAllByTestId('marker')).toHaveLength(2)
+    expect(screen.queryByText('Puerto Montt')).not.toBeInTheDocument()
+  })
+
+  it('reveals no-data stations when showNoData is enabled', async () => {
+    useFiltersStore.getState().setShowNoData(true)
+    render(<MapView stations={stations} />)
+
+    expect(await screen.findAllByTestId('marker')).toHaveLength(3)
+    expect(screen.getByText('Puerto Montt')).toBeInTheDocument()
   })
 })

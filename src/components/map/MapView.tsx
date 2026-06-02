@@ -2,7 +2,9 @@ import { useEffect, useMemo } from 'react'
 import { MapContainer, Popup, TileLayer } from 'react-leaflet'
 
 import { useReadingsRealtime } from '@/hooks/useReadingsRealtime'
+import { applyFilters } from '@/lib/stationFilters'
 import { useDashboardStore } from '@/stores/dashboardStore'
+import { useFiltersStore } from '@/stores/filtersStore'
 import { useRealtimeStore } from '@/stores/realtimeStore'
 import type { StationWithLatest } from '@/types/domain'
 import { DEFAULT_MAP_VIEW } from '@/utils/constants'
@@ -25,6 +27,11 @@ export function MapView({ stations }: MapViewProps) {
 
   const setRealtimeStatus = useRealtimeStore((s) => s.setStatus)
 
+  const searchTerm = useFiltersStore((s) => s.searchTerm)
+  const showNoData = useFiltersStore((s) => s.showNoData)
+  const selectedLevels = useFiltersStore((s) => s.selectedLevels)
+  const nearMe = useFiltersStore((s) => s.nearMe)
+
   useEffect(() => {
     setStations(stations)
   }, [stations, setStations])
@@ -43,6 +50,12 @@ export function MapView({ stations }: MapViewProps) {
 
   const liveStations = useMemo(() => Object.values(stationsById), [stationsById])
 
+  // Only the stations that pass the active filters are rendered on the map.
+  const visibleStations = useMemo(
+    () => applyFilters(liveStations, { searchTerm, showNoData, selectedLevels, nearMe }).visible,
+    [liveStations, searchTerm, showNoData, selectedLevels, nearMe],
+  )
+
   return (
     <div className="relative h-[calc(100vh-3.5rem-4rem)] w-full md:h-[calc(100vh-3.5rem)]">
       <MapContainer
@@ -56,7 +69,7 @@ export function MapView({ stations }: MapViewProps) {
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
         />
         <MapController />
-        {liveStations.map((station) => (
+        {visibleStations.map((station) => (
           <StationMarker key={station.id} station={station}>
             <Popup>
               <StationPopup station={station} onOpenTrends={setSelectedStationId} />
