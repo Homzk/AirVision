@@ -51,6 +51,8 @@ e2e/.auth
 .env
 .env.*
 !.env.example
+# .env.test solo tiene placeholders dummy para los unit tests (sin secretos).
+!.env.test
 
 # Supabase
 supabase/.branches

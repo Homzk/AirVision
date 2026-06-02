@@ -14,6 +14,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // Vitest solo corre los tests de `src/`. Los `.spec.ts` de `e2e/` son de
+    // Playwright y `supabase/functions/**/*.test.ts` corre bajo Deno; ninguno
+    // debe ejecutarse aquí.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
