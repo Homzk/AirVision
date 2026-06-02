@@ -76,8 +76,8 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 
 **Independent Test**: elegir nivel(es) → solo esas estaciones + contador correcto; combinación sin resultados → mensaje de vacío.
 
-- [ ] T011 [US3] Añadir a `src/components/map/MapFilters.tsx` los chips de nivel (multi-selección con `toggleLevel`/`clearLevels`), reutilizando `levelToColor`/`levelToLabel` de `src/lib/airQuality.ts`. Actualizar `src/components/map/MapFilters.test.tsx` (selección/deselección y unión OR).
-- [ ] T012 [US3] Añadir una prueba de integración (en `MapView.test.tsx` o `StationCounter.test.tsx`) que verifique la combinación búsqueda + nivel + sin-datos (AND) y el empty-state cuando el resultado es 0. (La lógica ya vive en `applyFilters`; esta tarea es el cableado/verificación.)
+- [x] T011 [US3] Añadir a `src/components/map/MapFilters.tsx` los chips de nivel (multi-selección con `toggleLevel`/`clearLevels`), reutilizando `levelToColor`/`levelToLabel` de `src/lib/airQuality.ts`. Actualizar `src/components/map/MapFilters.test.tsx` (selección/deselección y unión OR).
+- [x] T012 [US3] Añadir una prueba de integración (en `MapView.test.tsx` o `StationCounter.test.tsx`) que verifique la combinación búsqueda + nivel + sin-datos (AND) y el empty-state cuando el resultado es 0. (La lógica ya vive en `applyFilters`; esta tarea es el cableado/verificación.)
 
 **Checkpoint**: filtro por nivel combinable con los demás.
 

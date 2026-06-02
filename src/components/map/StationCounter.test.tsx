@@ -49,4 +49,19 @@ describe('StationCounter', () => {
     render(<StationCounter />)
     expect(screen.getByRole('status')).toHaveTextContent(/ninguna estación coincide/i)
   })
+
+  it('combines no-data + level filters with AND (T012)', () => {
+    // Show no-data too, but restrict to "good": the no-data station is excluded
+    // by the level filter, so only the two stations with data remain.
+    useFiltersStore.getState().setShowNoData(true)
+    useFiltersStore.getState().toggleLevel('good')
+    render(<StationCounter />)
+    expect(screen.getByRole('status')).toHaveTextContent('Mostrando 2 de 3 estaciones')
+  })
+
+  it('shows the empty state when the level filter excludes everything (T012)', () => {
+    useFiltersStore.getState().toggleLevel('hazardous') // no fixture is hazardous
+    render(<StationCounter />)
+    expect(screen.getByRole('status')).toHaveTextContent(/ninguna estación coincide/i)
+  })
 })

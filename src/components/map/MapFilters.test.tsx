@@ -34,4 +34,27 @@ describe('MapFilters', () => {
     render(<MapFilters />)
     expect(screen.getByRole('checkbox', { name: /sin datos recientes/i })).toBeChecked()
   })
+
+  it('renders the four level chips, unpressed by default', () => {
+    render(<MapFilters />)
+    for (const name of ['Buena', 'Moderada', 'Mala', 'Muy mala']) {
+      expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false')
+    }
+  })
+
+  it('toggling a level chip adds then removes it (OR multi-select)', async () => {
+    const user = userEvent.setup()
+    render(<MapFilters />)
+    const mala = screen.getByRole('button', { name: 'Mala' })
+
+    await user.click(mala)
+    expect(useFiltersStore.getState().selectedLevels).toEqual(['unhealthy'])
+    expect(mala).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(screen.getByRole('button', { name: 'Muy mala' }))
+    expect(useFiltersStore.getState().selectedLevels).toEqual(['unhealthy', 'hazardous'])
+
+    await user.click(mala)
+    expect(useFiltersStore.getState().selectedLevels).toEqual(['hazardous'])
+  })
 })
