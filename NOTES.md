@@ -1,9 +1,17 @@
 # AirVision — Session notes
 
-**Última actualización**: 2026-06-01
+**Última actualización**: 2026-06-02
 **Branch**: `main` (todos los commits empujados a `origin/main`)
 
 ## ▶ PRÓXIMA SESIÓN (retomar aquí)
+
+**Feature 004 (búsqueda y filtrado de estaciones) IMPLEMENTADA** — feature 100% front-end
+sobre las estaciones ya cargadas (sin cambios de BD/RLS). Buscador accesible (nombre/comuna →
+`flyTo`), toggle de estaciones sin datos + contador "X de Y", chips de filtro por nivel
+(worst-of), clustering con `supercluster`, y "cerca de mí" por geolocalización. Lógica pura en
+`src/lib/stationFilters.ts` (+ tests), estado en `src/stores/filtersStore.ts`, hooks
+`useSupercluster`/`useGeolocation`, y un spec E2E `e2e/specs/discovery.spec.ts`. Diseño en
+`specs/004-station-search-filters/`. Mergeada a `main` por PR (rama protegida).
 
 **Feature 002 (ingesta real OpenAQ) COMPLETA Y VERIFICADA** — el cron `*/15` está
 agendado (migración `0016_schedule_ingest_cron.sql`) y **confirmado disparando solo

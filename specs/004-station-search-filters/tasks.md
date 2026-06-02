@@ -114,10 +114,10 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 
 **Purpose**: E2E, responsive, docs y validación end-to-end.
 
-- [ ] T018 [P] [US1][US2][US3] Crear `e2e/specs/discovery.spec.ts` (Playwright) cubriendo: buscar → centrar/abrir; toggle sin-datos + contador; chip de nivel + empty-state. Localizadores web-first; sin `waitForTimeout` fijos. (Geolocalización y clustering quedan como E2E opcional por su complejidad de simulación.)
-- [ ] T019 [P] Barrido responsive a 360px de los controles nuevos (`StationSearch`, `MapFilters`, `StationCounter`): sin scroll horizontal ni solapes; ajustar clases Tailwind si hace falta.
-- [ ] T020 [P] Actualizar `README.md` (Roadmap: feature 004 + nota de la dependencia `supercluster` en Setup) y registrar la feature 004 en `NOTES.md`.
-- [ ] T021 Ejecutar la validación de `quickstart.md` (SC-001…SC-008), correr `npm run test:coverage` (gate ≥70%) y confirmar sin regresiones en los specs E2E previos (map/auth/favorites/alerts).
+- [x] T018 [P] [US1][US2][US3] Crear `e2e/specs/discovery.spec.ts` (Playwright) cubriendo: buscar → centrar/abrir; toggle sin-datos + contador; chip de nivel + empty-state. Localizadores web-first; sin `waitForTimeout` fijos. (Geolocalización y clustering quedan como E2E opcional por su complejidad de simulación.)
+- [x] T019 [P] Barrido responsive a 360px de los controles nuevos (`StationSearch`, `MapFilters`, `StationCounter`): sin scroll horizontal ni solapes; ajustar clases Tailwind si hace falta.
+- [x] T020 [P] Actualizar `README.md` (Roadmap: feature 004 + nota de la dependencia `supercluster` en Setup) y registrar la feature 004 en `NOTES.md`.
+- [x] T021 Ejecutar la validación de `quickstart.md` (SC-001…SC-008), correr `npm run test:coverage` (gate ≥70%) y confirmar sin regresiones en los specs E2E previos (map/auth/favorites/alerts).
 
 ---
 
