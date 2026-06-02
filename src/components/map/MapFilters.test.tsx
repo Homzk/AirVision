@@ -1,12 +1,21 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { MapFilters } from '@/components/map/MapFilters'
+import type { GeoStatus } from '@/hooks/useGeolocation'
+import type { Coords } from '@/lib/stationFilters'
 import { useFiltersStore } from '@/stores/filtersStore'
+
+// Controllable stub for the geolocation hook.
+const geo = vi.hoisted(() => ({
+  value: { status: 'idle' as GeoStatus, coords: null as Coords | null, request: vi.fn() },
+}))
+vi.mock('@/hooks/useGeolocation', () => ({ useGeolocation: () => geo.value }))
 
 beforeEach(() => {
   useFiltersStore.getState().reset()
+  geo.value = { status: 'idle', coords: null, request: vi.fn() }
 })
 
 describe('MapFilters', () => {
@@ -56,5 +65,32 @@ describe('MapFilters', () => {
 
     await user.click(mala)
     expect(useFiltersStore.getState().selectedLevels).toEqual(['hazardous'])
+  })
+
+  it('triggers a geolocation request when the near-me button is clicked', async () => {
+    const user = userEvent.setup()
+    render(<MapFilters />)
+    await user.click(screen.getByRole('button', { name: /cerca de mí/i }))
+    expect(geo.value.request).toHaveBeenCalled()
+  })
+
+  it('activates near-me and flies to the user when location is granted', () => {
+    geo.value = { status: 'granted', coords: { lat: -33.45, lng: -70.66 }, request: vi.fn() }
+    render(<MapFilters />)
+    expect(useFiltersStore.getState().nearMe).toEqual({
+      active: true,
+      coords: { lat: -33.45, lng: -70.66 },
+    })
+    expect(useFiltersStore.getState().flyToTarget).toEqual({
+      lat: -33.45,
+      lng: -70.66,
+      stationId: null,
+    })
+  })
+
+  it('shows a Spanish fallback message when location is denied', () => {
+    geo.value = { status: 'denied', coords: null, request: vi.fn() }
+    render(<MapFilters />)
+    expect(screen.getByRole('alert')).toHaveTextContent(/no pudimos obtener tu ubicación/i)
   })
 })

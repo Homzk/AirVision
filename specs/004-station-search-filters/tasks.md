@@ -103,8 +103,8 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 
 **Independent Test**: activar "cerca de mí" + permiso → mapa centrado y cercanía priorizada; denegar → mensaje de fallback sin romper la página.
 
-- [ ] T016 [US5] Crear `src/hooks/useGeolocation.ts` que envuelva `navigator.geolocation.getCurrentPosition` con `status ∈ idle|prompting|granted|denied|unsupported|error` y `request()`. Añadir `src/hooks/useGeolocation.test.ts` mockeando `navigator.geolocation` (no soportado / concedido / denegado).
-- [ ] T017 [US5] Añadir el botón "estaciones cerca de mí" a `src/components/map/MapFilters.tsx`: al conceder → `setNearMe(coords)` + `requestFlyTo(userCoords)` y orden por cercanía (`sortByProximity`) en la vista; al denegar/no soportar → mensaje de fallback en español. Actualizar `src/components/map/MapFilters.test.tsx`.
+- [x] T016 [US5] Crear `src/hooks/useGeolocation.ts` que envuelva `navigator.geolocation.getCurrentPosition` con `status ∈ idle|prompting|granted|denied|unsupported|error` y `request()`. Añadir `src/hooks/useGeolocation.test.ts` mockeando `navigator.geolocation` (no soportado / concedido / denegado).
+- [x] T017 [US5] Añadir el botón "estaciones cerca de mí" a `src/components/map/MapFilters.tsx`: al conceder → `setNearMe(coords)` + `requestFlyTo(userCoords)` y orden por cercanía (`sortByProximity`) en la vista; al denegar/no soportar → mensaje de fallback en español. Actualizar `src/components/map/MapFilters.test.tsx`.
 
 **Checkpoint**: las cinco historias funcionan y se combinan de forma coherente.
 

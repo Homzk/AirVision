@@ -1,3 +1,7 @@
+import { LocateFixed } from 'lucide-react'
+import { useEffect } from 'react'
+
+import { useGeolocation } from '@/hooks/useGeolocation'
 import { levelToColor, levelToLabel, type Level } from '@/lib/airQuality'
 import { useFiltersStore } from '@/stores/filtersStore'
 
@@ -15,6 +19,20 @@ export function MapFilters() {
   const setShowNoData = useFiltersStore((s) => s.setShowNoData)
   const selectedLevels = useFiltersStore((s) => s.selectedLevels)
   const toggleLevel = useFiltersStore((s) => s.toggleLevel)
+  const setNearMe = useFiltersStore((s) => s.setNearMe)
+  const requestFlyTo = useFiltersStore((s) => s.requestFlyTo)
+
+  const { status, coords, request } = useGeolocation()
+
+  // When the user grants location, prioritise nearby stations and fly there.
+  useEffect(() => {
+    if (status === 'granted' && coords) {
+      setNearMe(coords)
+      requestFlyTo({ lat: coords.lat, lng: coords.lng, stationId: null })
+    }
+  }, [status, coords, setNearMe, requestFlyTo])
+
+  const locationFailed = status === 'denied' || status === 'unsupported' || status === 'error'
 
   return (
     <div
@@ -60,6 +78,22 @@ export function MapFilters() {
           })}
         </div>
       </fieldset>
+
+      <div>
+        <button
+          type="button"
+          onClick={request}
+          className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs text-foreground hover:bg-accent hover:text-accent-foreground"
+        >
+          <LocateFixed aria-hidden className="h-3.5 w-3.5" />
+          {status === 'prompting' ? 'Localizando…' : 'Estaciones cerca de mí'}
+        </button>
+        {locationFailed && (
+          <p role="alert" className="mt-1 text-xs text-muted-foreground">
+            No pudimos obtener tu ubicación. Revisa los permisos del navegador.
+          </p>
+        )}
+      </div>
     </div>
   )
 }
