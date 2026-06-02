@@ -13,16 +13,20 @@ interface StationMarkerProps {
 export function StationMarker({ station, onSelect, children }: StationMarkerProps) {
   const level = station.latest ? computeWorstLevel(station.latest) : 'no_data'
   const color = levelToColor(level)
+  const isNoData = level === 'no_data'
 
   return (
     <CircleMarker
       center={[station.latitude, station.longitude]}
-      radius={10}
+      // Stations without recent data are visually de-emphasised: smaller,
+      // more transparent and with a dashed outline.
+      radius={isNoData ? 6 : 10}
       pathOptions={{
         color: '#ffffff',
-        weight: 2,
+        weight: isNoData ? 1 : 2,
         fillColor: color,
-        fillOpacity: 0.9,
+        fillOpacity: isNoData ? 0.45 : 0.9,
+        dashArray: isNoData ? '2 3' : undefined,
       }}
       eventHandlers={onSelect ? { click: () => onSelect(station.id) } : undefined}
     >

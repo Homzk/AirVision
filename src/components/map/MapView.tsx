@@ -12,6 +12,7 @@ import { DEFAULT_MAP_VIEW } from '@/utils/constants'
 import { MapController } from './MapController'
 import { MapFilters } from './MapFilters'
 import { MapLegend } from './MapLegend'
+import { StationCounter } from './StationCounter'
 import { StationMarker } from './StationMarker'
 import { StationPopup } from './StationPopup'
 import { StationSearch } from './StationSearch'
@@ -83,6 +84,9 @@ export function MapView({ stations }: MapViewProps) {
       </div>
       <div className="pointer-events-auto absolute right-4 top-4 z-[1000] max-w-[calc(100vw-2rem)]">
         <MapFilters />
+      </div>
+      <div className="pointer-events-auto absolute bottom-4 left-4 z-[1000]">
+        <StationCounter />
       </div>
       <MapLegend />
     </div>

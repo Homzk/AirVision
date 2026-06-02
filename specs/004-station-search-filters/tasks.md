@@ -63,8 +63,8 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 
 - [x] T007 [US2] Modificar `src/components/map/MapView.tsx` para derivar las estaciones visibles con `applyFilters(Object.values(stationsById), filters)` y renderizar solo `visible` (en vez de todas). Mantener la suscripción realtime existente. Actualizar las pruebas de `MapView`.
 - [x] T008 [US2] Crear `src/components/map/MapFilters.tsx` con el toggle "mostrar estaciones sin datos recientes" (lee/escribe `showNoData` del `filtersStore`), como panel de control superpuesto. Añadir `src/components/map/MapFilters.test.tsx` (toggle refleja y muta el estado).
-- [ ] T009 [US2] Crear `src/components/map/StationCounter.tsx` que muestre "Mostrando {shownCount} de {total} estaciones con datos" y un estado vacío en español cuando `shownCount === 0`. Añadir `src/components/map/StationCounter.test.tsx` (conteo y empty-state).
-- [ ] T010 [US2] Asegurar que las estaciones sin datos (`no_data`, gris) sean visualmente distinguibles de las activas cuando se muestran (revisar `src/components/map/StationMarker.tsx`: opacidad/borde) y actualizar `src/components/map/StationMarker.test.tsx`.
+- [x] T009 [US2] Crear `src/components/map/StationCounter.tsx` que muestre "Mostrando {shownCount} de {total} estaciones con datos" y un estado vacío en español cuando `shownCount === 0`. Añadir `src/components/map/StationCounter.test.tsx` (conteo y empty-state).
+- [x] T010 [US2] Asegurar que las estaciones sin datos (`no_data`, gris) sean visualmente distinguibles de las activas cuando se muestran (revisar `src/components/map/StationMarker.tsx`: opacidad/borde) y actualizar `src/components/map/StationMarker.test.tsx`.
 
 **Checkpoint**: mapa limpio por defecto, revelable, con contador y empty-state.
 
