@@ -48,7 +48,7 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 **Independent Test**: escribir "Tocopilla" → ver sugerencias → elegir una → el mapa vuela y abre el popup; término sin coincidencias → "sin resultados".
 
 - [x] T004 [US1] Crear `src/components/map/StationSearch.tsx`: combobox accesible (ARIA, navegación por teclado) que filtra las estaciones de `dashboardStore` con `matchesQuery` (≥2 chars), lista sugerencias (nombre + comuna), y al seleccionar llama `requestFlyTo` del `filtersStore`; muestra copy "sin resultados" en español. Añadir `src/components/map/StationSearch.test.tsx` (render, escribe y sugiere, selección dispara la acción, estado sin resultados).
-- [ ] T005 [US1] Crear `src/components/map/MapController.tsx`: componente hijo de `MapContainer` que con `useMap()` observa `flyToTarget`, hace `map.flyTo([lat,lng], zoom)`, fija `selectedStationId` en `dashboardStore`, abre el popup de la estación y llama `consumeFlyTo`. Añadir `src/components/map/MapController.test.tsx` (smoke con mock de `useMap`).
+- [x] T005 [US1] Crear `src/components/map/MapController.tsx`: componente hijo de `MapContainer` que con `useMap()` observa `flyToTarget`, hace `map.flyTo([lat,lng], zoom)`, fija `selectedStationId` en `dashboardStore`, abre el popup de la estación y llama `consumeFlyTo`. Añadir `src/components/map/MapController.test.tsx` (smoke con mock de `useMap`).
 - [ ] T006 [US1] Integrar en `src/components/map/MapView.tsx`: montar `MapController` dentro de `MapContainer` y `StationSearch` como control superpuesto; cablear la selección → `requestFlyTo`. Actualizar/crear pruebas de `MapView` afectadas.
 
 **Checkpoint**: el buscador funciona de extremo a extremo (MVP demostrable).
