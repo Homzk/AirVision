@@ -7,9 +7,11 @@ import { useRealtimeStore } from '@/stores/realtimeStore'
 import type { StationWithLatest } from '@/types/domain'
 import { DEFAULT_MAP_VIEW } from '@/utils/constants'
 
+import { MapController } from './MapController'
 import { MapLegend } from './MapLegend'
 import { StationMarker } from './StationMarker'
 import { StationPopup } from './StationPopup'
+import { StationSearch } from './StationSearch'
 
 interface MapViewProps {
   stations: StationWithLatest[]
@@ -53,6 +55,7 @@ export function MapView({ stations }: MapViewProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
         />
+        <MapController />
         {liveStations.map((station) => (
           <StationMarker key={station.id} station={station}>
             <Popup>
@@ -61,6 +64,9 @@ export function MapView({ stations }: MapViewProps) {
           </StationMarker>
         ))}
       </MapContainer>
+      <div className="pointer-events-auto absolute left-4 top-4 z-[1000]">
+        <StationSearch />
+      </div>
       <MapLegend />
     </div>
   )

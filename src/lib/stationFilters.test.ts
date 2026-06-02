@@ -147,7 +147,7 @@ describe('applyFilters', () => {
       nearMe: { active: true, coords: santiago },
     })
     expect(result.shownCount).toBe(4)
-    expect(result.visible[0].id).toBe(lasCondes.id) // nearest to Santiago
+    expect(result.visible[0]?.id).toBe(lasCondes.id) // nearest to Santiago
   })
 })
 
@@ -174,7 +174,7 @@ describe('sortByProximity', () => {
     )
     const ascending = [...distances].sort((a, b) => a - b)
     expect(distances).toEqual(ascending)
-    expect(sorted[0].id).toBe(lasCondes.id)
+    expect(sorted[0]?.id).toBe(lasCondes.id)
     expect(input).toEqual(ALL) // original order untouched
   })
 })
