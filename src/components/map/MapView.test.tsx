@@ -11,6 +11,7 @@ import type { StationWithLatest } from '@/types/domain'
 vi.mock('react-leaflet', () => ({
   MapContainer: ({ children }: { children: ReactNode }) => <div data-testid="map">{children}</div>,
   TileLayer: () => null,
+  ZoomControl: () => null,
   Popup: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   useMap: () => ({ flyTo: vi.fn() }),
 }))

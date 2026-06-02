@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { MapContainer, TileLayer } from 'react-leaflet'
+import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet'
 
 import { useReadingsRealtime } from '@/hooks/useReadingsRealtime'
 import { applyFilters } from '@/lib/stationFilters'
@@ -62,23 +62,24 @@ export function MapView({ stations }: MapViewProps) {
         center={DEFAULT_MAP_VIEW.center}
         zoom={DEFAULT_MAP_VIEW.zoom}
         scrollWheelZoom
+        zoomControl={false}
         className="h-full w-full"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
         />
+        {/* Zoom control moved to the bottom-left so it doesn't sit under the search box. */}
+        <ZoomControl position="bottomleft" />
         <MapController />
         <StationClusterLayer stations={visibleStations} />
       </MapContainer>
-      <div className="pointer-events-auto absolute left-4 top-4 z-[1000]">
+      <div className="pointer-events-auto absolute left-4 top-4 z-[1000] space-y-2">
         <StationSearch />
+        <StationCounter />
       </div>
       <div className="pointer-events-auto absolute right-4 top-4 z-[1000] max-w-[calc(100vw-2rem)]">
         <MapFilters />
-      </div>
-      <div className="pointer-events-auto absolute bottom-4 left-4 z-[1000]">
-        <StationCounter />
       </div>
       <MapLegend />
     </div>
