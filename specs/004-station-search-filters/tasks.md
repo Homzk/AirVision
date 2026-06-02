@@ -24,7 +24,7 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 
 **Purpose**: Dependencia nueva para el clustering.
 
-- [ ] T001 Añadir `supercluster` (y `@types/supercluster` si no trae tipos) a `package.json` y ejecutar `npm install`; verificar que `npm run build` sigue verde.
+- [x] T001 Añadir `supercluster` (y `@types/supercluster` si no trae tipos) a `package.json` y ejecutar `npm install`; verificar que `npm run build` sigue verde.
 
 ---
 
@@ -34,7 +34,7 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 
 **⚠️ CRITICAL**: Ninguna historia puede completarse hasta terminar esta fase.
 
-- [ ] T002 [P] Crear `src/lib/stationFilters.ts` con `normalize`, `matchesQuery`, `stationLevel`, `applyFilters` (reglas sin-datos ∧ nivel ∧ búsqueda; OR entre niveles; cómputo de `shownCount`/`total`), `haversineKm` y `sortByProximity`, según `contracts/filters-and-store.md`; reutiliza `computeWorstLevel`/`Level` de `src/lib/airQuality.ts`. Añadir `src/lib/stationFilters.test.ts` cubriendo normalización (acentos/mayúsculas), umbral de 2 chars, exclusión de `latest===null`, OR de niveles, combinación AND, conteos, caso 0 resultados, haversine (Santiago↔Valparaíso ≈100 km) y orden por cercanía.
+- [x] T002 [P] Crear `src/lib/stationFilters.ts` con `normalize`, `matchesQuery`, `stationLevel`, `applyFilters` (reglas sin-datos ∧ nivel ∧ búsqueda; OR entre niveles; cómputo de `shownCount`/`total`), `haversineKm` y `sortByProximity`, según `contracts/filters-and-store.md`; reutiliza `computeWorstLevel`/`Level` de `src/lib/airQuality.ts`. Añadir `src/lib/stationFilters.test.ts` cubriendo normalización (acentos/mayúsculas), umbral de 2 chars, exclusión de `latest===null`, OR de niveles, combinación AND, conteos, caso 0 resultados, haversine (Santiago↔Valparaíso ≈100 km) y orden por cercanía.
 - [ ] T003 [P] Crear `src/stores/filtersStore.ts` (Zustand) con `searchTerm`, `showNoData` (default `false`), `selectedLevels` (default `[]`), `nearMe`, `flyToTarget` y las acciones `setSearchTerm`, `setShowNoData`, `toggleLevel`, `clearLevels`, `setNearMe`, `clearNearMe`, `requestFlyTo`, `consumeFlyTo`, `reset`. Añadir `src/stores/filtersStore.test.ts` con los invariantes del contrato (toggles idempotentes, flyTo de un disparo, reset).
 
 **Checkpoint**: motor listo → las historias pueden construirse sobre él.
