@@ -15,10 +15,16 @@ vi.mock('react-leaflet', () => ({
   useMap: () => ({ flyTo: vi.fn() }),
 }))
 
-// The marker renders a Leaflet vector; stub it to a simple counter element.
-vi.mock('@/components/map/StationMarker', () => ({
-  StationMarker: ({ station }: { station: StationWithLatest }) => (
-    <div data-testid="marker">{station.name}</div>
+// The cluster layer renders Leaflet markers; stub it to one element per station.
+vi.mock('@/components/map/StationClusterLayer', () => ({
+  StationClusterLayer: ({ stations }: { stations: StationWithLatest[] }) => (
+    <>
+      {stations.map((s) => (
+        <div key={s.id} data-testid="marker">
+          {s.name}
+        </div>
+      ))}
+    </>
   ),
 }))
 

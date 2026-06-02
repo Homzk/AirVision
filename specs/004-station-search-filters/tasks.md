@@ -89,9 +89,9 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 
 **Independent Test**: a nivel país, burbujas con conteo; al hacer zoom se dividen en marcadores; con filtros activos los conteos cuadran.
 
-- [ ] T013 [US4] Crear `src/hooks/useSupercluster.ts` que envuelva `supercluster`: recibe los puntos visibles + `{ zoom, bounds }` y devuelve clusters/hojas (ver `contracts/filters-and-store.md`). Añadir `src/hooks/useSupercluster.test.ts` (agrupa a zoom bajo con `count` correcto; hojas a zoom alto).
-- [ ] T014 [US4] Crear `src/components/map/StationClusterLayer.tsx`: usa `useMap`/`useMapEvents` para leer zoom/bounds, llama `useSupercluster` con las estaciones visibles, y pinta cada cluster como burbuja con su conteo y cada hoja con `StationMarker` (+ su `Popup`). Añadir `src/components/map/StationClusterLayer.test.tsx` (smoke).
-- [ ] T015 [US4] Integrar `StationClusterLayer` en `src/components/map/MapView.tsx` reemplazando el render directo de marcadores por el clustered de las estaciones visibles; clic en cluster / zoom lo expande. Actualizar pruebas de `MapView`.
+- [x] T013 [US4] Crear `src/hooks/useSupercluster.ts` que envuelva `supercluster`: recibe los puntos visibles + `{ zoom, bounds }` y devuelve clusters/hojas (ver `contracts/filters-and-store.md`). Añadir `src/hooks/useSupercluster.test.ts` (agrupa a zoom bajo con `count` correcto; hojas a zoom alto).
+- [x] T014 [US4] Crear `src/components/map/StationClusterLayer.tsx`: usa `useMap`/`useMapEvents` para leer zoom/bounds, llama `useSupercluster` con las estaciones visibles, y pinta cada cluster como burbuja con su conteo y cada hoja con `StationMarker` (+ su `Popup`). Añadir `src/components/map/StationClusterLayer.test.tsx` (smoke).
+- [x] T015 [US4] Integrar `StationClusterLayer` en `src/components/map/MapView.tsx` reemplazando el render directo de marcadores por el clustered de las estaciones visibles; clic en cluster / zoom lo expande. Actualizar pruebas de `MapView`.
 
 **Checkpoint**: mapa legible a cualquier zoom, coherente con los filtros.
 
