@@ -7,7 +7,7 @@
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%C2%B7%20Auth%20%C2%B7%20Realtime-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vitest](https://img.shields.io/badge/Vitest-2.1-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Coverage](https://img.shields.io/badge/coverage-97.25%25%20líneas-success)](#tests)
+[![Coverage](https://img.shields.io/badge/coverage-97.7%25%20líneas-success)](#tests)
 [![License](https://img.shields.io/badge/license-MIT-blue)](#licencia)
 
 ---
@@ -38,7 +38,7 @@ El problema que resuelve es concreto: la información de calidad del aire suele 
 
 ## Features
 
-Las cinco historias de usuario del MVP están implementadas, probadas y en `main`.
+Las cinco historias de usuario del MVP, más la búsqueda y el filtrado de estaciones (feature 004), están implementadas, probadas y en `main`.
 
 ### 🗺️ US1 — Mapa interactivo de calidad del aire
 
@@ -73,6 +73,15 @@ Las cinco historias de usuario del MVP están implementadas, probadas y en `main
 - Alertas **edge-triggered**: cada alerta dispara **una sola vez** al cruzar el umbral y se **re-arma** cuando una medición posterior deja de cumplir la condición. Implementado como máquina de estado dentro de un trigger `AFTER INSERT` en `readings` (`evaluate_alerts()`).
 - Historial de las **últimas 20** activaciones (rotación automática vía trigger).
 - Badge de no leídas en el header + toasts en tiempo real cuando una alerta dispara con la sesión activa.
+
+### 🧭 Búsqueda y filtrado de estaciones (feature 004)
+
+- **Buscador** accesible (combobox con teclado) por nombre de estación o comuna; al elegir una, el mapa vuela hasta ella y abre su detalle.
+- **Toggle para ocultar/mostrar estaciones sin datos recientes** (ocultas por defecto para un mapa limpio) con un **contador** "Mostrando X de Y estaciones".
+- **Filtro por nivel de calidad** mediante chips (worst-of), combinable con la búsqueda y el toggle.
+- **Clustering de marcadores** con [Supercluster](https://github.com/mapbox/supercluster): al alejar el zoom las estaciones cercanas se agrupan en una burbuja con su conteo; al pulsarla, el mapa encuadra todas sus estaciones.
+- **"Estaciones cerca de mí"** por geolocalización del navegador, con mensaje de fallback en español si se deniega el permiso.
+- 100% en el cliente sobre las estaciones ya cargadas: sin nuevas consultas por tecla ni cambios de base de datos. Diseño en [`specs/004-station-search-filters/`](specs/004-station-search-filters/).
 
 ## Stack técnico
 

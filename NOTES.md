@@ -5,13 +5,19 @@
 
 ## ▶ PRÓXIMA SESIÓN (retomar aquí)
 
-**Feature 004 (búsqueda y filtrado de estaciones) IMPLEMENTADA** — feature 100% front-end
-sobre las estaciones ya cargadas (sin cambios de BD/RLS). Buscador accesible (nombre/comuna →
-`flyTo`), toggle de estaciones sin datos + contador "X de Y", chips de filtro por nivel
-(worst-of), clustering con `supercluster`, y "cerca de mí" por geolocalización. Lógica pura en
-`src/lib/stationFilters.ts` (+ tests), estado en `src/stores/filtersStore.ts`, hooks
-`useSupercluster`/`useGeolocation`, y un spec E2E `e2e/specs/discovery.spec.ts`. Diseño en
-`specs/004-station-search-filters/`. Mergeada a `main` por PR (rama protegida).
+**Sin trabajo en curso.** Las features 001–004 están completas y en `main`. Próximos candidatos
+(opcionales): feature 005 (p. ej. persistir los filtros en la URL, diferido de la 004), o atacar
+la deuda técnica de abajo (bundle size, GRANTs de `user_favorites`/`alerts`, renumerar migraciones).
+
+**Feature 004 (búsqueda y filtrado de estaciones) ✅ SHIPPED** — mergeada a `main` por PR #3
+(rama protegida; checks `quality` + `e2e` requeridos). Feature 100% front-end sobre las estaciones
+ya cargadas (sin cambios de BD/RLS). Buscador accesible (nombre/comuna → `flyTo`), toggle de
+estaciones sin datos + contador "X de Y", chips de filtro por nivel (worst-of), clustering con
+`supercluster` (clic en burbuja → `fitBounds` a todas sus estaciones), y "cerca de mí" por
+geolocalización. Lógica pura en `src/lib/stationFilters.ts`, estado en `src/stores/filtersStore.ts`,
+hooks `useSupercluster`/`useGeolocation`, spec E2E `e2e/specs/discovery.spec.ts`. Dos fixes de UX
+tras la review: control de zoom Leaflet movido a abajo-izquierda (chocaba con el buscador) y la
+expansión de cluster ahora encuadra todas las estaciones. Diseño en `specs/004-station-search-filters/`.
 
 **Feature 002 (ingesta real OpenAQ) COMPLETA Y VERIFICADA** — el cron `*/15` está
 agendado (migración `0016_schedule_ingest_cron.sql`) y **confirmado disparando solo
