@@ -127,7 +127,7 @@ Decisiones clave que se reflejan en el código:
 
 ## Setup local
 
-Requiere **Node 20+**, **npm 10+** y la **Supabase CLI**. Guía detallada (y troubleshooting) en [`SETUP.md`](./SETUP.md).
+Requiere **Node 22+** (ver `.nvmrc`), **npm 10+** y la **Supabase CLI**. Guía detallada (y troubleshooting) en [`SETUP.md`](./SETUP.md).
 
 ```bash
 # 1. Clonar e instalar dependencias (respeta el lockfile)
@@ -207,9 +207,9 @@ El proyecto se rige además por una **constitución** ([`.specify/memory/constit
 
 **Feature 002 — Ingesta real desde OpenAQ v3 — ✅ completada:** la app corre con **datos reales** de la red chilena (SINCA vía OpenAQ v3), no con seed sintético. Dos Edge Functions (Deno) del lado del servidor: `seed-stations` pobló el catálogo con **~169 estaciones reales** de Chile, e `ingest-openaq` ingiere mediciones (PM2.5/PM10/O₃) con upsert idempotente `COALESCE`, descarte de lecturas rancias (regla _R-fresh_, ≤3 h por contaminante) e inválidas. Corre **automáticamente cada 15 min** con un cron `pg_cron` + `pg_net` (`*/15 * * * *`); el frontend nunca toca OpenAQ (Constitución, Principio II). Diseño completo en [`specs/002-openaq-ingestion/`](specs/002-openaq-ingestion/).
 
-**Diferido (post-MVP):**
+**Feature 003 — Suite de tests E2E con Playwright — ✅ completada:** una suite end-to-end en `e2e/` ejercita la app real en Chromium contra el Supabase desplegado, cubriendo los cuatro flujos (mapa público, registro/login, favoritos, alertas). Los flujos autenticados usan cuentas efímeras creadas vía la API admin (limpiadas al terminar) y el disparo de alertas se provoca inyectando una lectura con `service_role` **fuera del navegador**. Corre en CI (job `e2e`) como **gate requerido** de cada push/PR sobre `main`, junto al job `quality` (lint, typecheck, tests). Diseño completo en [`specs/003-e2e-playwright-tests/`](specs/003-e2e-playwright-tests/).
 
-- Tests E2E con Playwright (register/login, navegación del mapa, favoritos, alertas).
+Con la feature 003 cerrada, **todas las features planificadas** —incluido el único ítem que quedaba diferido del MVP (los tests E2E)— están implementadas, probadas y en `main`.
 
 ## Licencia
 
