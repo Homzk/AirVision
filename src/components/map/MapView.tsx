@@ -10,6 +10,7 @@ import type { StationWithLatest } from '@/types/domain'
 import { DEFAULT_MAP_VIEW } from '@/utils/constants'
 
 import { MapController } from './MapController'
+import { MapFilters } from './MapFilters'
 import { MapLegend } from './MapLegend'
 import { StationMarker } from './StationMarker'
 import { StationPopup } from './StationPopup'
@@ -79,6 +80,9 @@ export function MapView({ stations }: MapViewProps) {
       </MapContainer>
       <div className="pointer-events-auto absolute left-4 top-4 z-[1000]">
         <StationSearch />
+      </div>
+      <div className="pointer-events-auto absolute right-4 top-4 z-[1000] max-w-[calc(100vw-2rem)]">
+        <MapFilters />
       </div>
       <MapLegend />
     </div>

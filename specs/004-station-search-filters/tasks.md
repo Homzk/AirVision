@@ -62,7 +62,7 @@ description: 'Task list for AirVision feature 004 — Búsqueda y filtrado de es
 **Independent Test**: al cargar, solo estaciones con datos + contador correcto; activar el control → aparecen las grises y el contador sube; desactivar → se ocultan.
 
 - [x] T007 [US2] Modificar `src/components/map/MapView.tsx` para derivar las estaciones visibles con `applyFilters(Object.values(stationsById), filters)` y renderizar solo `visible` (en vez de todas). Mantener la suscripción realtime existente. Actualizar las pruebas de `MapView`.
-- [ ] T008 [US2] Crear `src/components/map/MapFilters.tsx` con el toggle "mostrar estaciones sin datos recientes" (lee/escribe `showNoData` del `filtersStore`), como panel de control superpuesto. Añadir `src/components/map/MapFilters.test.tsx` (toggle refleja y muta el estado).
+- [x] T008 [US2] Crear `src/components/map/MapFilters.tsx` con el toggle "mostrar estaciones sin datos recientes" (lee/escribe `showNoData` del `filtersStore`), como panel de control superpuesto. Añadir `src/components/map/MapFilters.test.tsx` (toggle refleja y muta el estado).
 - [ ] T009 [US2] Crear `src/components/map/StationCounter.tsx` que muestre "Mostrando {shownCount} de {total} estaciones con datos" y un estado vacío en español cuando `shownCount === 0`. Añadir `src/components/map/StationCounter.test.tsx` (conteo y empty-state).
 - [ ] T010 [US2] Asegurar que las estaciones sin datos (`no_data`, gris) sean visualmente distinguibles de las activas cuando se muestran (revisar `src/components/map/StationMarker.tsx`: opacidad/borde) y actualizar `src/components/map/StationMarker.test.tsx`.
 
