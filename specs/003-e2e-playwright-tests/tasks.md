@@ -103,7 +103,7 @@ description: 'Task list for AirVision feature 003 — Suite de Tests End-to-End 
 **Independent Test**: abrir un PR con la suite integrada → el job `e2e` corre `playwright test`; romper un flujo a propósito → el check se pone en rojo y bloquea la fusión.
 
 - [x] T015 [US5] Añadir un job `e2e` a `.github/workflows/ci.yml` (separado de `quality`): `actions/setup-node@20`, `npm ci`, `npx playwright install --with-deps chromium` (con caché), `npm run build`, `npm run test:e2e`; env desde GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`); subir `playwright-report/` y `test-results/` con `actions/upload-artifact` (`if: always()`)
-- [ ] T016 [US5] **(PENDIENTE — ops del owner)** Cargar los 3 GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) en Settings → Secrets and variables → Actions, y marcar el check `e2e` como **requerido** para merge a `main` (Settings → Branches / Rulesets). Hasta que se carguen, el job `e2e` se **salta en verde** (paso "Check secrets" con aviso), no falla.
+- [x] T016 [US5] **(HECHO)** Cargados los 3 GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) en Settings → Secrets and variables → Actions; el job `e2e` corre en verde contra el cloud. Creado un ruleset `protect-main` (Active) que exige los checks `Lint, typecheck, test` y `E2E (Playwright)` para fusionar a `main`. Ajustes derivados al encender el job: runners a Node 22 (WebSocket nativo de Supabase Realtime) + `.nvmrc`; Vitest acotado a `src/**` y `.env.test` con placeholders dummy; actions a `@v6` (runtime Node 24).
 
 **Checkpoint**: las regresiones de cualquier flujo cubierto se detectan automáticamente y bloquean el merge.
 
