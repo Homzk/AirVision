@@ -55,7 +55,7 @@ export function StationClusterLayer({ stations }: StationClusterLayerProps) {
     () => stations.map((s) => ({ lat: s.latitude, lng: s.longitude, stationId: s.id })),
     [stations],
   )
-  const clusters = useSupercluster(points, view)
+  const { clusters, getLeafCoords } = useSupercluster(points, view)
 
   return (
     <>
@@ -67,8 +67,15 @@ export function StationClusterLayer({ stations }: StationClusterLayerProps) {
               position={[item.lat, item.lng]}
               icon={clusterIcon(item.count)}
               eventHandlers={{
-                click: () =>
-                  map.flyTo([item.lat, item.lng], Math.min(map.getZoom() + 2, MAX_CLUSTER_ZOOM)),
+                // Frame every station in the cluster at once instead of a fixed zoom step.
+                click: () => {
+                  const leaves = getLeafCoords(item.clusterId)
+                  if (leaves.length === 0) return
+                  const bounds = L.latLngBounds(
+                    leaves.map((c) => [c.lat, c.lng] as [number, number]),
+                  )
+                  map.fitBounds(bounds, { padding: [60, 60], maxZoom: MAX_CLUSTER_ZOOM })
+                },
               }}
             />
           )

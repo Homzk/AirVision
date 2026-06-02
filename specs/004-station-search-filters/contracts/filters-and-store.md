@@ -103,10 +103,15 @@ interface ClusterPoint {
 function useSupercluster(
   points: ClusterPoint[],
   view: { zoom: number; bounds: [number, number, number, number] | null },
-): Array<
-  | { type: 'cluster'; lat: number; lng: number; count: number; clusterId: number }
-  | { type: 'leaf'; lat: number; lng: number; stationId: number }
->
+): {
+  clusters: Array<
+    | { type: 'cluster'; lat: number; lng: number; count: number; clusterId: number }
+    | { type: 'leaf'; lat: number; lng: number; stationId: number }
+  >
+  // Coordinates of every station inside a cluster — used to fitBounds on click
+  // so a cluster reveals all its stations at once.
+  getLeafCoords: (clusterId: number) => { lat: number; lng: number }[]
+}
 ```
 
 **Comportamiento** (`useSupercluster.test.ts`): con puntos cercanos a zoom bajo devuelve ≥1 `cluster` cuyo `count` suma las hojas; a zoom alto devuelve `leaf` individuales. Los puntos de entrada son **solo** las estaciones visibles tras el filtro.

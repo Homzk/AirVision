@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import Supercluster from 'supercluster'
 
 /** A station reduced to the minimum needed for clustering. */
@@ -20,12 +20,18 @@ export type ClusterResult =
 
 type PointProps = { stationId: number }
 
+export interface UseSuperclusterResult {
+  clusters: ClusterResult[]
+  /** Coordinates of every station inside a cluster (used to frame them on click). */
+  getLeafCoords: (clusterId: number) => { lat: number; lng: number }[]
+}
+
 /**
  * Clusters the given (already filtered) points for the current map view using
  * Supercluster. The clustering is a pure function of points + zoom + bounds,
  * so the component layer stays declarative and reacts to filters automatically.
  */
-export function useSupercluster(points: ClusterPoint[], view: MapViewState): ClusterResult[] {
+export function useSupercluster(points: ClusterPoint[], view: MapViewState): UseSuperclusterResult {
   const index = useMemo(() => {
     const sc = new Supercluster<PointProps>({ radius: 60, maxZoom: 16 })
     sc.load(
@@ -38,7 +44,7 @@ export function useSupercluster(points: ClusterPoint[], view: MapViewState): Clu
     return sc
   }, [points])
 
-  return useMemo(() => {
+  const clusters = useMemo<ClusterResult[]>(() => {
     if (!view.bounds) return []
     return index.getClusters(view.bounds, Math.round(view.zoom)).map((feature) => {
       const [lng = 0, lat = 0] = feature.geometry.coordinates
@@ -54,4 +60,15 @@ export function useSupercluster(points: ClusterPoint[], view: MapViewState): Clu
       return { type: 'leaf' as const, lat, lng, stationId: feature.properties.stationId }
     })
   }, [index, view.bounds, view.zoom])
+
+  const getLeafCoords = useCallback(
+    (clusterId: number) =>
+      index.getLeaves(clusterId, Infinity).map((leaf) => {
+        const [lng = 0, lat = 0] = leaf.geometry.coordinates
+        return { lat, lng }
+      }),
+    [index],
+  )
+
+  return { clusters, getLeafCoords }
 }
